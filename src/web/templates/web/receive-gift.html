@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Frontend Example for Darilka Contract | Receive</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+        height: 100vh;
+        display: grid;
+        font-size: 18px;
+      }
+
+      #app {
+        align-self: center;
+        justify-self: center;
+      }
+
+      .container {
+        width: 300px;
+        background-color: #eee;
+        text-align: center;
+        padding: 27px 18px;
+        margin-bottom: 27px;
+      }
+
+      h1 {
+        margin: 0;
+        padding-bottom: 18px;
+        font-size: 18px;
+      }
+
+      input,
+      button {
+        padding: 9px;
+        font-size: 18px;
+        margin-bottom: 9px;
+      }
+
+      input.full-width {
+        display: block;
+        margin: 0 auto;
+        margin-bottom: 9px;
+        text-align: center;
+      }
+
+      .info {
+        max-width: 21ch;
+        margin: 0 auto;
+        margin-bottom: 18px;
+        background-color: #ddd;
+        padding: 12px 24px;
+        word-wrap: break-word;
+        font-family: "Lucida Console", Monaco, monospace;
+        font-size: 15px;
+      }
+
+      a {
+        color: black;
+      }
+
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.3.4/dist/web3.min.js"></script>
+    <script>
+      async function fetchDarilkaAddress() {
+        const response = await fetch(
+                "{{ BACKEND_DARILKA_API }}",
+                { method: "GET", mode: 'cors', headers: { 'Content-Type': 'application/json',}}
+        );
+        const res = await response.json();
+        console.log('Requested api for darilka address, got', res);
+        return res.address;
+      }
+      async function fetchPostBooking(nft_contract, nft_token, receiver_address) {
+        const response = await fetch(
+                "{{ BACKEND_BOOK_API }}",
+                {
+                  method: "POST",
+                  mode: 'cors',
+                  headers: { 'Content-Type': 'application/json',},
+                  body: JSON.stringify({receiver_address: receiver_address, nft_token: nft_token, nft_contract: nft_contract})
+                }
+        );  // todo: hardcode
+        const res = await response.json();
+        console.log('Requested api for booking gift, got', res);
+        return res.address;
+      }
+      // standart metamask behaviour to login
+      const ethEnabled = async () => {
+        if (window.ethereum) {
+          await window.ethereum.send('eth_requestAccounts');
+          window.web3 = new Web3(window.ethereum);
+          console.log(web3);
+          return true;
+        }
+        return false;
+      }
+
+      const erc721Abi = [{ inputs: [ { internalType: "string", name: "name_", type: "string", }, { internalType: "string", name: "symbol_", type: "string", }, ], stateMutability: "nonpayable", type: "constructor", }, { anonymous: false, inputs: [ { indexed: true, internalType: "address", name: "owner", type: "address", }, { indexed: true, internalType: "address", name: "approved", type: "address", }, { indexed: true, internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "Approval", type: "event", }, { anonymous: false, inputs: [ { indexed: true, internalType: "address", name: "owner", type: "address", }, { indexed: true, internalType: "address", name: "operator", type: "address", }, { indexed: false, internalType: "bool", name: "approved", type: "bool", }, ], name: "ApprovalForAll", type: "event", }, { anonymous: false, inputs: [ { indexed: true, internalType: "address", name: "from", type: "address", }, { indexed: true, internalType: "address", name: "to", type: "address", }, { indexed: true, internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "Transfer", type: "event", }, { inputs: [ { internalType: "bytes4", name: "interfaceId", type: "bytes4", }, ], name: "supportsInterface", outputs: [ { internalType: "bool", name: "", type: "bool", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "address", name: "owner", type: "address", }, ], name: "balanceOf", outputs: [ { internalType: "uint256", name: "", type: "uint256", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "ownerOf", outputs: [ { internalType: "address", name: "", type: "address", }, ], stateMutability: "view", type: "function", }, { inputs: [], name: "name", outputs: [ { internalType: "string", name: "", type: "string", }, ], stateMutability: "view", type: "function", }, { inputs: [], name: "symbol", outputs: [ { internalType: "string", name: "", type: "string", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "tokenURI", outputs: [ { internalType: "string", name: "", type: "string", }, ], stateMutability: "view", type: "function", }, { inputs: [], name: "baseURI", outputs: [ { internalType: "string", name: "", type: "string", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "address", name: "owner", type: "address", }, { internalType: "uint256", name: "index", type: "uint256", }, ], name: "tokenOfOwnerByIndex", outputs: [ { internalType: "uint256", name: "", type: "uint256", }, ], stateMutability: "view", type: "function", }, { inputs: [], name: "totalSupply", outputs: [ { internalType: "uint256", name: "", type: "uint256", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "uint256", name: "index", type: "uint256", }, ], name: "tokenByIndex", outputs: [ { internalType: "uint256", name: "", type: "uint256", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "address", name: "to", type: "address", }, { internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "approve", outputs: [], stateMutability: "nonpayable", type: "function", }, { inputs: [ { internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "getApproved", outputs: [ { internalType: "address", name: "", type: "address", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "address", name: "operator", type: "address", }, { internalType: "bool", name: "approved", type: "bool", }, ], name: "setApprovalForAll", outputs: [], stateMutability: "nonpayable", type: "function", }, { inputs: [ { internalType: "address", name: "owner", type: "address", }, { internalType: "address", name: "operator", type: "address", }, ], name: "isApprovedForAll", outputs: [ { internalType: "bool", name: "", type: "bool", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "address", name: "from", type: "address", }, { internalType: "address", name: "to", type: "address", }, { internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "transferFrom", outputs: [], stateMutability: "nonpayable", type: "function", }, { inputs: [ { internalType: "address", name: "from", type: "address", }, { internalType: "address", name: "to", type: "address", }, { internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "safeTransferFrom", outputs: [], stateMutability: "nonpayable", type: "function", }, { inputs: [ { internalType: "address", name: "from", type: "address", }, { internalType: "address", name: "to", type: "address", }, { internalType: "uint256", name: "tokenId", type: "uint256", }, { internalType: "bytes", name: "_data", type: "bytes", }, ], name: "safeTransferFrom", outputs: [], stateMutability: "nonpayable", type: "function", }]
+      const darilkaAbi = [ { "inputs": [ { "internalType": "uint256", "name": "_comission", "type": "uint256" } ], "stateMutability": "nonpayable", "type": "constructor" }, { "inputs": [ { "internalType": "address", "name": "receiver", "type": "address" }, { "internalType": "address", "name": "nftContract", "type": "address" }, { "internalType": "uint256", "name": "tokenId", "type": "uint256" } ], "name": "bookTransfer", "outputs": [], "stateMutability": "payable", "type": "function" }, { "inputs": [ { "internalType": "address", "name": "newOwner", "type": "address" } ], "name": "changeOwner", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [ { "internalType": "address", "name": "sender", "type": "address" }, { "internalType": "address", "name": "receiver", "type": "address" }, { "internalType": "address", "name": "nftContract", "type": "address" }, { "internalType": "uint256", "name": "tokenId", "type": "uint256" }, { "internalType": "string", "name": "confirmation", "type": "string" } ], "name": "performTransferNFT", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [ { "internalType": "address", "name": "nftContract", "type": "address" }, { "internalType": "uint256", "name": "tokenId", "type": "uint256" }, { "internalType": "bytes32", "name": "keccak256ConfirmationHash", "type": "bytes32" } ], "name": "setConfirmation", "outputs": [], "stateMutability": "payable", "type": "function" } ]
+
+      /*  Smart contract values */
+      const contractABI =
+        '[{"constant":false,"inputs":[{"name":"newMessage","type":"string"}],"name":"update","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"message","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"inputs":[{"name":"initMessage","type":"string"}],"payable":false,"stateMutability":"nonpayable","type":"constructor"}]';
+      const contractByteCode =
+        "0x608060405234801561001057600080fd5b5060405161047f38038061047f8339818101604052602081101561003357600080fd5b81019080805164010000000081111561004b57600080fd5b8281019050602081018481111561006157600080fd5b815185600182028301116401000000008211171561007e57600080fd5b5050929190505050806000908051906020019061009c9291906100a3565b5050610148565b828054600181600116156101000203166002900490600052602060002090601f016020900481019282601f106100e457805160ff1916838001178555610112565b82800160010185558215610112579182015b828111156101115782518255916020019190600101906100f6565b5b50905061011f9190610123565b5090565b61014591905b80821115610141576000816000905550600101610129565b5090565b90565b610328806101576000396000f3fe608060405234801561001057600080fd5b5060043610610053576000357c0100000000000000000000000000000000000000000000000000000000900480633d7403a314610058578063e21f37ce14610113575b600080fd5b6101116004803603602081101561006e57600080fd5b810190808035906020019064010000000081111561008b57600080fd5b82018360208201111561009d57600080fd5b803590602001918460018302840111640100000000831117156100bf57600080fd5b91908080601f016020809104026020016040519081016040528093929190818152602001838380828437600081840152601f19601f820116905080830192505050505050509192919290505050610196565b005b61011b6101b0565b6040518080602001828103825283818151815260200191508051906020019080838360005b8381101561015b578082015181840152602081019050610140565b50505050905090810190601f1680156101885780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b80600090805190602001906101ac92919061024e565b5050565b60008054600181600116156101000203166002900480601f0160208091040260200160405190810160405280929190818152602001828054600181600116156101000203166002900480156102465780601f1061021b57610100808354040283529160200191610246565b820191906000526020600020905b81548152906001019060200180831161022957829003601f168201915b505050505081565b828054600181600116156101000203166002900490600052602060002090601f016020900481019282601f1061028f57805160ff19168380011785556102bd565b828001600101855582156102bd579182015b828111156102bc5782518255916020019190600101906102a1565b5b5090506102ca91906102ce565b5090565b6102f091905b808211156102ec5760008160009055506001016102d4565b5090565b9056fea265627a7a7230582003ae1ef5a63bf058bfd2b31398bdee39d3cbfbb7fbf84235f4bc2ec352ee810f64736f6c634300050a0032";
+      let contractAddress = "0x1fb4F955aEF63f5e3B8754fE32a9399864fc1b54";
+
+      const render = async () => {
+        const isLoggedIn = await ethEnabled();
+        console.log('logged in ');
+        console.log(isLoggedIn);
+        /* Show login form if user is not logged in */
+        let authHtml = `
+          <div class="container">
+            <h1>Please login win meta mask</h1>
+<!--            <form onsubmit="handleLogin(event)">-->
+<!--              <input type="email" name="email" required="required" placeholder="Enter your email" />-->
+<!--              <button type="submit">Send</button>-->
+<!--            </form>-->
+          </div>
+        `;
+        let userHtml = "";
+        let bookHtml = "";
+        let transferHtml = "";
+        const target = document.querySelector("#app");
+        if (isLoggedIn) {
+
+          const network = await window.web3.eth.net.getNetworkType();
+          console.log('network');
+          console.log(network);
+          const userAddress = (await window.web3.eth.getAccounts())[0];
+          const userBalance = window.web3.utils.fromWei(
+            await window.web3.eth.getBalance(userAddress) // Balance is in wei
+          );
+          console.log('balance');
+          console.log(userBalance);
+          authHtml = `
+            <div class="container">
+              <h1>Logout</h1>
+              {{ test }}
+              <div class="info">To logout use your MetamaskApp.</div>
+              <button disabled onclick="handleLogout()">Logout</button>
+            </div>
+          `;
+          userHtml = `
+            <div class="container">
+              <h1>Frontend Example for Darilka Contract | Receive Action</h1>
+              <div class="info">
+                <a href="https://testnet.bscscan.com/address/${userAddress}" target="_blank">${userAddress}</a>
+              </div>
+              <h1>Network</h1>
+              <div class="info">${network}</div>
+              <h1>Balance</h1>
+              <div class="info">${userBalance} ETH</div>
+            </div>
+          `;
+          bookHtml = `
+            <div class="container">
+              <h1>1. Book A Gift Through Backend</h1>
+              <form onsubmit="handleBook(event)">
+                <input type="text" name="nft_contract" class="full-width" required="required" placeholder="Nft Contract" />
+                <input type="text" name="nft_token" class="full-width" required="required" placeholder="Nft Token" />
+                <input disabled type="text" name="receiver_address" class="full-width" required="required" value="${userAddress}"/>
+
+                <button id="btn-send-book" type="submit">Book</button>
+              </form>
+            </div>
+          `;
+          transferHtml = `
+            <div class="container">
+              <h1>2. Thransfer The Gift Through Chain</h1>
+              <form onsubmit="handleTransfer(event)">
+                <input type="text" name="nft_contract" class="full-width" required="required" placeholder="Nft Contract" />
+                <input type="text" name="nft_token" class="full-width" required="required" placeholder="Nft Token" />
+                <input type="text" name="sender_address" class="full-width" required="required" placeholder="Sender address"/>
+                <input disabled type="text" name="receiver_address" class="full-width" required="required" value="${userAddress}"/>
+                <input type="text" name="password" class="full-width" required="required" placeholder="Password"/>
+
+                <button id="btn-send-transfer" type="submit">Transfer</button>
+              </form>
+            </div>
+          `;
+        }
+        target.innerHTML =
+          authHtml + userHtml + bookHtml + transferHtml;
+      };
+
+      const handleBook = async (e) => {
+        e.preventDefault();
+        const nft_contract = new FormData(e.target).get("nft_contract");
+        const nft_token = new FormData(e.target).get("nft_token");
+
+        if (nft_contract && nft_token) {
+          const btnSendTxn = document.getElementById("btn-send-book");
+          btnSendTxn.disabled = true;
+          btnSendTxn.innerText = "Booking...";
+
+          const receiver_address = (await window.web3.eth.getAccounts())[0];
+
+          await fetchPostBooking(nft_contract, nft_token, receiver_address);
+          render();
+        }
+      };
+
+      const handleTransfer = async (e) => {
+        e.preventDefault();
+        const nft_contract = new FormData(e.target).get("nft_contract");
+        const nft_token = new FormData(e.target).get("nft_token");
+        const password = new FormData(e.target).get("password");
+        const sender_address = new FormData(e.target).get("sender_address");
+
+        if (nft_contract && nft_token && password && sender_address) {
+          const btnSendTxn = document.getElementById("btn-send-transfer");
+          btnSendTxn.disabled = true;
+          btnSendTxn.innerText = "Transferring...";
+
+          const receiver_address = (await window.web3.eth.getAccounts())[0];
+
+          const darilka_address = await fetchDarilkaAddress();
+          let contract = new window.web3.eth.Contract(
+              darilkaAbi,
+              darilka_address
+          );
+          const result = await contract.methods
+            .performTransferNFT(sender_address, receiver_address, nft_contract, nft_token, password)
+            .send({
+              from: receiver_address,
+              gas: 1000000,
+              gasPrice: '5000000000'
+            })
+          console.log("result of transferring: ", result);
+          render();
+        }
+      };
+
+      const handleLogout = async () => {
+        render();
+      };
+    </script>
+  </head>
+  <body onload="render()">
+    <div id="app">
+      <div class="container">Loading...</div>
+    </div>
+  </body>
+</html>
