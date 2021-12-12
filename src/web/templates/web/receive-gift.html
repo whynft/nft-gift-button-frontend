@@ -73,14 +73,18 @@
         console.log('Requested api for darilka address, got', res);
         return res.address;
       }
-      async function fetchPostBooking(nft_contract, nft_token, receiver_address) {
+      async function fetchPostBooking(nft_contract, nft_token, receiver_address, verification_code) {
         const response = await fetch(
                 "{{ BACKEND_BOOK_API }}",
                 {
                   method: "POST",
                   mode: 'cors',
                   headers: { 'Content-Type': 'application/json',},
-                  body: JSON.stringify({receiver_address: receiver_address, nft_token: nft_token, nft_contract: nft_contract})
+                  body: JSON.stringify({
+                    receiver_address: receiver_address,
+                    nft_token: nft_token,
+                    nft_contract: nft_contract,
+                    verification_code: verification_code})
                 }
         );  // todo: hardcode
         const res = await response.json();
@@ -141,7 +145,7 @@
             <div class="container">
               <h1>Logout</h1>
               {{ test }}
-              <div class="info">To logout use your MetamaskApp.</div>
+              <div class="info">To logout use your MetamaskApp & Reload page.</div>
               <button disabled onclick="handleLogout()">Logout</button>
             </div>
           `;
@@ -160,9 +164,11 @@
           bookHtml = `
             <div class="container">
               <h1>1. Book A Gift Through Backend</h1>
+              <div class="info">Firstly you should book the gift with help of centralized backend. Thus, no one who looks to chain will pretend for the gift</div>
               <form onsubmit="handleBook(event)">
                 <input type="text" name="nft_contract" class="full-width" required="required" placeholder="Nft Contract" />
                 <input type="text" name="nft_token" class="full-width" required="required" placeholder="Nft Token" />
+                <input type="text" name="verification_code" class="full-width" required="required" placeholder="Verification Code" />
                 <input disabled type="text" name="receiver_address" class="full-width" required="required" value="${userAddress}"/>
 
                 <button id="btn-send-book" type="submit">Book</button>
@@ -172,6 +178,7 @@
           transferHtml = `
             <div class="container">
               <h1>2. Thransfer The Gift Through Chain</h1>
+              <div class="info">You will use allocated NFT by sender in advance.</div>
               <form onsubmit="handleTransfer(event)">
                 <input type="text" name="nft_contract" class="full-width" required="required" placeholder="Nft Contract" />
                 <input type="text" name="nft_token" class="full-width" required="required" placeholder="Nft Token" />
@@ -192,15 +199,16 @@
         e.preventDefault();
         const nft_contract = new FormData(e.target).get("nft_contract");
         const nft_token = new FormData(e.target).get("nft_token");
+        const verification_code = new FormData(e.target).get("verification_code");
 
-        if (nft_contract && nft_token) {
+        if (nft_contract && nft_token && verification_code) {
           const btnSendTxn = document.getElementById("btn-send-book");
           btnSendTxn.disabled = true;
           btnSendTxn.innerText = "Booking...";
 
           const receiver_address = (await window.web3.eth.getAccounts())[0];
 
-          await fetchPostBooking(nft_contract, nft_token, receiver_address);
+          await fetchPostBooking(nft_contract, nft_token, receiver_address, verification_code);
           render();
         }
       };
