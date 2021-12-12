@@ -6,7 +6,7 @@ To note, all frontend logic is **inside client html** file
 and itself it consists of **pure frontend  html** that will migrate to reactApp in the future, i.e. in the second milestone accroding to grant roadmap. 
 
 ## Start
-Prepare `.env` according to [.env.example](.env.example) and
+Prepare `.env` according to [.env.example](.env.example) (coz we want to aware frontend what backend it should use) and
 ```
 docker-compose up
 ```
