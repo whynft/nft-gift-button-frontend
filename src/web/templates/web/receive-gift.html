@@ -64,6 +64,14 @@
     </style>
     <script src="https://cdn.jsdelivr.net/npm/web3@1.3.4/dist/web3.min.js"></script>
     <script>
+      function getNftContractToken(link) {
+        const linkElements = link.split("/");
+        const numbers = linkElements[linkElements.length - 1].split(":");
+        const nftToken = numbers[1].split("?")[0];
+        const nftContract = numbers[0];
+        return [nftContract, nftToken]
+      }
+
       async function fetchDarilkaAddress() {
         const response = await fetch(
                 "{{ BACKEND_DARILKA_API }}",
@@ -73,6 +81,7 @@
         console.log('Requested api for darilka address, got', res);
         return res.address;
       }
+
       async function fetchPostBooking(nft_contract, nft_token, receiver_address, verification_code) {
         const response = await fetch(
                 "{{ BACKEND_BOOK_API }}",
@@ -91,6 +100,7 @@
         console.log('Requested api for booking gift, got', res);
         return res.address;
       }
+
       // standart metamask behaviour to login
       const ethEnabled = async () => {
         if (window.ethereum) {
@@ -104,6 +114,9 @@
 
       const erc721Abi = [{ inputs: [ { internalType: "string", name: "name_", type: "string", }, { internalType: "string", name: "symbol_", type: "string", }, ], stateMutability: "nonpayable", type: "constructor", }, { anonymous: false, inputs: [ { indexed: true, internalType: "address", name: "owner", type: "address", }, { indexed: true, internalType: "address", name: "approved", type: "address", }, { indexed: true, internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "Approval", type: "event", }, { anonymous: false, inputs: [ { indexed: true, internalType: "address", name: "owner", type: "address", }, { indexed: true, internalType: "address", name: "operator", type: "address", }, { indexed: false, internalType: "bool", name: "approved", type: "bool", }, ], name: "ApprovalForAll", type: "event", }, { anonymous: false, inputs: [ { indexed: true, internalType: "address", name: "from", type: "address", }, { indexed: true, internalType: "address", name: "to", type: "address", }, { indexed: true, internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "Transfer", type: "event", }, { inputs: [ { internalType: "bytes4", name: "interfaceId", type: "bytes4", }, ], name: "supportsInterface", outputs: [ { internalType: "bool", name: "", type: "bool", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "address", name: "owner", type: "address", }, ], name: "balanceOf", outputs: [ { internalType: "uint256", name: "", type: "uint256", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "ownerOf", outputs: [ { internalType: "address", name: "", type: "address", }, ], stateMutability: "view", type: "function", }, { inputs: [], name: "name", outputs: [ { internalType: "string", name: "", type: "string", }, ], stateMutability: "view", type: "function", }, { inputs: [], name: "symbol", outputs: [ { internalType: "string", name: "", type: "string", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "tokenURI", outputs: [ { internalType: "string", name: "", type: "string", }, ], stateMutability: "view", type: "function", }, { inputs: [], name: "baseURI", outputs: [ { internalType: "string", name: "", type: "string", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "address", name: "owner", type: "address", }, { internalType: "uint256", name: "index", type: "uint256", }, ], name: "tokenOfOwnerByIndex", outputs: [ { internalType: "uint256", name: "", type: "uint256", }, ], stateMutability: "view", type: "function", }, { inputs: [], name: "totalSupply", outputs: [ { internalType: "uint256", name: "", type: "uint256", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "uint256", name: "index", type: "uint256", }, ], name: "tokenByIndex", outputs: [ { internalType: "uint256", name: "", type: "uint256", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "address", name: "to", type: "address", }, { internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "approve", outputs: [], stateMutability: "nonpayable", type: "function", }, { inputs: [ { internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "getApproved", outputs: [ { internalType: "address", name: "", type: "address", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "address", name: "operator", type: "address", }, { internalType: "bool", name: "approved", type: "bool", }, ], name: "setApprovalForAll", outputs: [], stateMutability: "nonpayable", type: "function", }, { inputs: [ { internalType: "address", name: "owner", type: "address", }, { internalType: "address", name: "operator", type: "address", }, ], name: "isApprovedForAll", outputs: [ { internalType: "bool", name: "", type: "bool", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "address", name: "from", type: "address", }, { internalType: "address", name: "to", type: "address", }, { internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "transferFrom", outputs: [], stateMutability: "nonpayable", type: "function", }, { inputs: [ { internalType: "address", name: "from", type: "address", }, { internalType: "address", name: "to", type: "address", }, { internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "safeTransferFrom", outputs: [], stateMutability: "nonpayable", type: "function", }, { inputs: [ { internalType: "address", name: "from", type: "address", }, { internalType: "address", name: "to", type: "address", }, { internalType: "uint256", name: "tokenId", type: "uint256", }, { internalType: "bytes", name: "_data", type: "bytes", }, ], name: "safeTransferFrom", outputs: [], stateMutability: "nonpayable", type: "function", }]
       const darilkaAbi = [ { "inputs": [ { "internalType": "uint256", "name": "_comission", "type": "uint256" } ], "stateMutability": "nonpayable", "type": "constructor" }, { "inputs": [ { "internalType": "address", "name": "receiver", "type": "address" }, { "internalType": "address", "name": "nftContract", "type": "address" }, { "internalType": "uint256", "name": "tokenId", "type": "uint256" } ], "name": "bookTransfer", "outputs": [], "stateMutability": "payable", "type": "function" }, { "inputs": [ { "internalType": "address", "name": "newOwner", "type": "address" } ], "name": "changeOwner", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [ { "internalType": "address", "name": "sender", "type": "address" }, { "internalType": "address", "name": "receiver", "type": "address" }, { "internalType": "address", "name": "nftContract", "type": "address" }, { "internalType": "uint256", "name": "tokenId", "type": "uint256" }, { "internalType": "string", "name": "confirmation", "type": "string" } ], "name": "performTransferNFT", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [ { "internalType": "address", "name": "nftContract", "type": "address" }, { "internalType": "uint256", "name": "tokenId", "type": "uint256" }, { "internalType": "bytes32", "name": "keccak256ConfirmationHash", "type": "bytes32" } ], "name": "setConfirmation", "outputs": [], "stateMutability": "payable", "type": "function" } ]
+
+      let nftContractGlobal = '';  // for convenience
+      let nftTokenGlobal = '';
 
       const render = async () => {
         const isLoggedIn = await ethEnabled();
@@ -122,6 +135,7 @@
         let userHtml = "";
         let bookHtml = "";
         let transferHtml = "";
+        let memoryBlockHtml = "";
         const target = document.querySelector("#app");
         if (isLoggedIn) {
 
@@ -138,7 +152,7 @@
             <div class="container">
               <h1>Logout</h1>
               {{ test }}
-              <div class="info">To logout use your MetamaskApp & Reload page.</div>
+              <div class="info">To logout/relogin use your MetamaskApp and refresh the page.</div>
               <button disabled onclick="handleLogout()">Logout</button>
             </div>
           `;
@@ -154,13 +168,24 @@
               <div class="info">${userBalance} ETH</div>
             </div>
           `;
+          memoryBlockHtml = `
+            <div class="container">
+              <h1>0. Memory Block</h1>
+              <div class="info">Use the block for convenience in the flow below.</div>
+              <div class="info">Thus, by submitting you do not need to fill the values below again and again for each blocks.</div>
+              <form onsubmit="handleRemember(event)">
+                <input type="text" name="rarible_link" class="full-width" required="required" placeholder="Rarible Link"/>
+                <button id="btn-send-remember" type="submit">Remember & Insert</button>
+              </form>
+            </div>
+          `;
           bookHtml = `
             <div class="container">
               <h1>1. Book A Gift Through Backend</h1>
               <div class="info">Firstly you should book the gift with help of centralized backend. Thus, no one who looks to chain will pretend for the gift</div>
               <form onsubmit="handleBook(event)">
-                <input type="text" name="nft_contract" class="full-width" required="required" placeholder="Nft Contract" />
-                <input type="text" name="nft_token" class="full-width" required="required" placeholder="Nft Token" />
+                <input type="text" name="nft_contract" class="full-width" required="required" placeholder="Nft Contract" value="${nftContractGlobal}"/>
+                <input type="text" name="nft_token" class="full-width" required="required" placeholder="Nft Token" value="${nftTokenGlobal}"/>
                 <input type="text" name="verification_code" class="full-width" required="required" placeholder="Verification Code" />
                 <input disabled type="text" name="receiver_address" class="full-width" required="required" value="${userAddress}"/>
 
@@ -173,8 +198,8 @@
               <h1>2. Thransfer The Gift Through Chain</h1>
               <div class="info">You will use allocated NFT by sender in advance.</div>
               <form onsubmit="handleTransfer(event)">
-                <input type="text" name="nft_contract" class="full-width" required="required" placeholder="Nft Contract" />
-                <input type="text" name="nft_token" class="full-width" required="required" placeholder="Nft Token" />
+                <input type="text" name="nft_contract" class="full-width" required="required" placeholder="Nft Contract" value="${nftContractGlobal}"/>
+                <input type="text" name="nft_token" class="full-width" required="required" placeholder="Nft Token" value="${nftTokenGlobal}"/>
                 <input type="text" name="sender_address" class="full-width" required="required" placeholder="Sender address"/>
                 <input disabled type="text" name="receiver_address" class="full-width" required="required" value="${userAddress}"/>
                 <input type="text" name="password" class="full-width" required="required" placeholder="Password"/>
@@ -185,7 +210,20 @@
           `;
         }
         target.innerHTML =
-          authHtml + userHtml + bookHtml + transferHtml;
+          authHtml + userHtml + memoryBlockHtml + bookHtml + transferHtml;
+      };
+
+      const handleRemember = async (e) => {
+        e.preventDefault();
+        const raribleLink = new FormData(e.target).get("rarible_link");
+        if (raribleLink) {
+          const values = getNftContractToken(raribleLink);
+          nftContractGlobal = values[0];
+          nftTokenGlobal = values[1];
+
+          console.log('remember values to global params...');
+          render();
+        }
       };
 
       const handleBook = async (e) => {

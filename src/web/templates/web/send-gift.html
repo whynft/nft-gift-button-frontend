@@ -64,6 +64,14 @@
     </style>
     <script src="https://cdn.jsdelivr.net/npm/web3@1.3.4/dist/web3.min.js"></script>
     <script>
+      function getNftContractToken(link) {
+        const linkElements = link.split("/");
+        const numbers = linkElements[linkElements.length - 1].split(":");
+        const nftToken = numbers[1].split("?")[0];
+        const nftContract = numbers[0];
+        return [nftContract, nftToken]
+      }
+
       async function fetchDarilkaAddress() {
         const response = await fetch(
                 "{{ BACKEND_DARILKA_API }}",
@@ -105,6 +113,8 @@
 
       /*  Smart contract values */
       let verificationCode = '';
+      let nftContractGlobal = '';  // for convenience
+      let nftTokenGlobal = '';
 
       const render = async () => {
         const isLoggedIn = await ethEnabled();
@@ -124,6 +134,7 @@
         let userHtml = "";
         let givePermissionHtml = "";
         let setPasswordHtml = "";
+        let memoryBlockHtml = "";
         const target = document.querySelector("#app");
         if (isLoggedIn) {
 
@@ -139,7 +150,7 @@
           authHtml = `
             <div class="container">
               <h1>Logout</h1>
-              <div class="info">To logout use your MetamaskApp.</div>
+              <div class="info">To logout/relogin use your MetamaskApp and refresh the page.</div>
               <button disabled onclick="handleLogout()">Logout</button>
             </div>
           `;
@@ -155,15 +166,27 @@
               <div class="info">${userBalance} ETH</div>
             </div>
           `;
+          memoryBlockHtml = `
+            <div class="container">
+              <h1>0. Memory Block</h1>
+              <div class="info">Use the block for convenience in the flow below.</div>
+              <div class="info">Thus, by submitting you do not need to fill the values below again and again for each blocks.</div>
+              <form onsubmit="handleRemember(event)">
+                <input type="text" name="rarible_link" class="full-width" required="required" placeholder="Rarible Link"/>
+                <button id="btn-send-remember" type="submit">Remember & Insert</button>
+              </form>
+            </div>
+          `;
           getVerificationCodeHtml = `
             <div class="container">
-              <h1>Verification Code</h1>
+              <h1>1. Verification Code</h1>
               <div class="info">Get verification code for a gift.</div>
               <div class="info">This code should use gift receiver to prove himself to backend, i.e. to book the gift. Thus, remember the code.</div>
               <form onsubmit="handleVerificationCode(event)">
-                <input type="text" name="nft_contract" class="full-width" required="required" placeholder="Nft Contract" />
-                <input type="text" name="nft_token" class="full-width" required="required" placeholder="Nft Token" />
+                <input type="text" name="nft_contract" class="full-width" required="required" placeholder="Nft Contract" value="${nftContractGlobal}"/>
+                <input type="text" name="nft_token" class="full-width" required="required" placeholder="Nft Token" value="${nftTokenGlobal}"/>
                 <button id="btn-send-verification-code" type="submit">Get</button>
+                <div class="info">Verification code will be shown below. Copy and give to receiver.</div>
                 <input type="text" name="verification_code" class="full-width" required="required" value="${verificationCode}" disabled />
               </form>
 
@@ -171,10 +194,11 @@
           `;
           givePermissionHtml = `
             <div class="container">
-              <h1>1. Give Permission</h1>
+              <h1>2. Give Permission</h1>
+              <div class="info">Add the permission to the NFT contract (and only to the one) to call a transfer contract for the NFT.</div>
               <form onsubmit="handleGivePermission(event)">
-                <input type="text" name="nft_contract" class="full-width" required="required" placeholder="Nft Contract" />
-                <input type="text" name="nft_token" class="full-width" required="required" placeholder="Nft Token" />
+                <input type="text" name="nft_contract" class="full-width" required="required" placeholder="Nft Contract" value="${nftContractGlobal}"/>
+                <input type="text" name="nft_token" class="full-width" required="required" placeholder="Nft Token" value="${nftTokenGlobal}"/>
 
                 <button id="btn-send-permission" type="submit">Grant Permission</button>
               </form>
@@ -182,10 +206,12 @@
           `;
           setPasswordHtml = `
             <div class="container">
-              <h1>2. Set Password</h1>
+              <h1>3. Set Password</h1>
+              <div class="info">Set password  for the NFT stright into contract in a blockchain.</div>
+              <div class="info">The receiver should be aware of the password you set.</div>
               <form onsubmit="handleSetPassword(event)">
-                <input type="text" name="nft_contract" class="full-width" required="required" placeholder="Nft Contract" />
-                <input type="text" name="nft_token" class="full-width" required="required" placeholder="Nft Token" />
+                <input type="text" name="nft_contract" class="full-width" required="required" placeholder="Nft Contract" value="${nftContractGlobal}"/>
+                <input type="text" name="nft_token" class="full-width" required="required" placeholder="Nft Token" value="${nftTokenGlobal}"/>
                 <input type="text" name="password" class="full-width" required="required" placeholder="Password" />
 
                 <button id="btn-send-password" type="submit">Set Password</button>
@@ -194,7 +220,20 @@
           `;
         }
         target.innerHTML =
-          authHtml + userHtml + getVerificationCodeHtml + givePermissionHtml + setPasswordHtml;
+          authHtml + userHtml + memoryBlockHtml + getVerificationCodeHtml + givePermissionHtml + setPasswordHtml;
+      };
+
+      const handleRemember = async (e) => {
+        e.preventDefault();
+        const raribleLink = new FormData(e.target).get("rarible_link");
+        if (raribleLink) {
+          const values = getNftContractToken(raribleLink);
+          nftContractGlobal = values[0];
+          nftTokenGlobal = values[1];
+
+          console.log('remember values to global params...');
+          render();
+        }
       };
 
       const handleVerificationCode = async (e) => {
@@ -206,6 +245,7 @@
           const btnSendTxn = document.getElementById("btn-send-verification-code");
           btnSendTxn.disabled = true;
           btnSendTxn.innerText = "Getting...";
+          console.log('send for code', nft_contract, nft_token);
 
           verificationCode = await fetchVerificationCode(nft_contract, nft_token);
           render();
