@@ -14,7 +14,7 @@ Prepare an NFT on https://rinkeby.rarible.com/ (for demonstration we use rinkeby
 ## Start
 Prepare `.env` according to [.env.example](.env.example) (coz we want to aware frontend what backend it should use) and
 ```
-docker-compose up
+docker-compose -f docker-compose.prod.yml up
 ```
 
 ## Demonstration Flow
