@@ -190,7 +190,8 @@
                 <input type="text" name="nft_contract" class="full-width" required="required" placeholder="Nft Contract" value="${nftContractGlobal}"/>
                 <input type="text" name="nft_token" class="full-width" required="required" placeholder="Nft Token" value="${nftTokenGlobal}"/>
                 <button id="btn-send-verification-code" type="submit">Get</button>
-                <div class="info">Verification code will be shown below. Copy and give to receiver.</div>
+                <div class="info">Verification code will be shown below.</div>
+                <div class="info">You do not need to copy if you will use the final block and will generate special link.</div>
                 <input type="text" name="verification_code" class="full-width" required="required" value="${verificationCodeGlobal}" disabled />
               </form>
 
@@ -212,7 +213,7 @@
             <div class="container">
               <h1>3. Set Password</h1>
               <div class="info">Set password  for the NFT stright into contract in a blockchain.</div>
-              <div class="info">The receiver should be aware of the password you set.</div>
+              <div class="info">You do not need to copy if you will use the final block and will generate special link.</div>
               <form onsubmit="handleSetPassword(event)">
                 <input type="text" name="nft_contract" class="full-width" required="required" placeholder="Nft Contract" value="${nftContractGlobal}"/>
                 <input type="text" name="nft_token" class="full-width" required="required" placeholder="Nft Token" value="${nftTokenGlobal}"/>
