@@ -117,6 +117,9 @@
 
       let nftContractGlobal = '';  // for convenience
       let nftTokenGlobal = '';
+      let passwordGlobal = '';
+      let verificationCodeGlobal = '';
+      let senderAddressGlobal = '';
 
       const render = async () => {
         const isLoggedIn = await ethEnabled();
@@ -135,7 +138,7 @@
         let userHtml = "";
         let bookHtml = "";
         let transferHtml = "";
-        let memoryBlockHtml = "";
+        let sumbitSpecialLinkHtml = "";
         const target = document.querySelector("#app");
         if (isLoggedIn) {
 
@@ -168,25 +171,25 @@
               <div class="info">${userBalance} ETH</div>
             </div>
           `;
-          memoryBlockHtml = `
+          sumbitSpecialLinkHtml = `
             <div class="container">
-              <h1>0. Memory Block</h1>
-              <div class="info">Use the block for convenience in the flow below.</div>
-              <div class="info">Thus, by submitting you do not need to fill the values below again and again for each blocks.</div>
-              <form onsubmit="handleRemember(event)">
-                <input type="text" name="rarible_link" class="full-width" required="required" placeholder="Rarible Link"/>
-                <button id="btn-send-remember" type="submit">Remember & Insert</button>
+              <h1>1. Past A Special Link</h1>
+              <div class="info">A sender should give you the link.</div>
+              <div class="info">Thus, by submitting the link all necessary info fill be filled, and you just should complete the following steps.</div>
+              <form onsubmit="handleSpecialLink(event)">
+                <input type="text" name="special_link" class="full-width" required="required" placeholder="Special Link"/>
+                <button id="btn-send-link" type="submit">Submit</button>
               </form>
             </div>
           `;
           bookHtml = `
             <div class="container">
-              <h1>1. Book A Gift Through Backend</h1>
-              <div class="info">Firstly you should book the gift with help of centralized backend. Thus, no one who looks to chain will pretend for the gift</div>
+              <h1>2. Book A Gift Through Backend</h1>
+              <div class="info">Firstly you should book the gift with help of centralized backend. Thus, no one who looks to chain will pretend for the gift.</div>
               <form onsubmit="handleBook(event)">
                 <input type="text" name="nft_contract" class="full-width" required="required" placeholder="Nft Contract" value="${nftContractGlobal}"/>
                 <input type="text" name="nft_token" class="full-width" required="required" placeholder="Nft Token" value="${nftTokenGlobal}"/>
-                <input type="text" name="verification_code" class="full-width" required="required" placeholder="Verification Code" />
+                <input type="text" name="verification_code" class="full-width" required="required" placeholder="Verification Code" value="${verificationCodeGlobal}"/>
                 <input disabled type="text" name="receiver_address" class="full-width" required="required" value="${userAddress}"/>
 
                 <button id="btn-send-book" type="submit">Book</button>
@@ -195,14 +198,14 @@
           `;
           transferHtml = `
             <div class="container">
-              <h1>2. Thransfer The Gift Through Chain</h1>
+              <h1>3. Thransfer The Gift Through Chain</h1>
               <div class="info">You will use allocated NFT by sender in advance.</div>
               <form onsubmit="handleTransfer(event)">
                 <input type="text" name="nft_contract" class="full-width" required="required" placeholder="Nft Contract" value="${nftContractGlobal}"/>
                 <input type="text" name="nft_token" class="full-width" required="required" placeholder="Nft Token" value="${nftTokenGlobal}"/>
-                <input type="text" name="sender_address" class="full-width" required="required" placeholder="Sender address"/>
+                <input type="text" name="sender_address" class="full-width" required="required" placeholder="Sender address" value="${senderAddressGlobal}"/>
                 <input disabled type="text" name="receiver_address" class="full-width" required="required" value="${userAddress}"/>
-                <input type="text" name="password" class="full-width" required="required" placeholder="Password"/>
+                <input type="text" name="password" class="full-width" required="required" placeholder="Password" value="${passwordGlobal}"/>
 
                 <button id="btn-send-transfer" type="submit">Transfer</button>
               </form>
@@ -210,18 +213,28 @@
           `;
         }
         target.innerHTML =
-          authHtml + userHtml + memoryBlockHtml + bookHtml + transferHtml;
+          authHtml + userHtml + sumbitSpecialLinkHtml + bookHtml + transferHtml;
       };
 
-      const handleRemember = async (e) => {
+      const handleSpecialLink = async (e) => {
         e.preventDefault();
-        const raribleLink = new FormData(e.target).get("rarible_link");
-        if (raribleLink) {
-          const values = getNftContractToken(raribleLink);
-          nftContractGlobal = values[0];
-          nftTokenGlobal = values[1];
+        const special_link = new FormData(e.target).get("special_link");
+        if (special_link) {
+          // todo: hardcode for link decoding
+          specialLinkGlobal = special_link;
+          const values = atob(special_link).split(":");
+          if (!values.length === 5) {
+            console.log("Wrong length for decoded special link", special_link.length);
+            return
+          }
+          console.log('Insert values to global params...');
 
-          console.log('remember values to global params...');
+          senderAddressGlobal = values[0]
+          nftContractGlobal = values[1];
+          nftTokenGlobal = values[2];
+          verificationCodeGlobal = values[3];
+          passwordGlobal = values[4];
+
           render();
         }
       };

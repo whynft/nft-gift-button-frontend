@@ -65,6 +65,7 @@
     <script src="https://cdn.jsdelivr.net/npm/web3@1.3.4/dist/web3.min.js"></script>
     <script>
       function getNftContractToken(link) {
+        console.log(link);
         const linkElements = link.split("/");
         const numbers = linkElements[linkElements.length - 1].split(":");
         const nftToken = numbers[1].split("?")[0];
@@ -112,9 +113,11 @@
       const darilkaAbi = [ { "inputs": [ { "internalType": "uint256", "name": "_comission", "type": "uint256" } ], "stateMutability": "nonpayable", "type": "constructor" }, { "inputs": [ { "internalType": "address", "name": "receiver", "type": "address" }, { "internalType": "address", "name": "nftContract", "type": "address" }, { "internalType": "uint256", "name": "tokenId", "type": "uint256" } ], "name": "bookTransfer", "outputs": [], "stateMutability": "payable", "type": "function" }, { "inputs": [ { "internalType": "address", "name": "newOwner", "type": "address" } ], "name": "changeOwner", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [ { "internalType": "address", "name": "sender", "type": "address" }, { "internalType": "address", "name": "receiver", "type": "address" }, { "internalType": "address", "name": "nftContract", "type": "address" }, { "internalType": "uint256", "name": "tokenId", "type": "uint256" }, { "internalType": "string", "name": "confirmation", "type": "string" } ], "name": "performTransferNFT", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [ { "internalType": "address", "name": "nftContract", "type": "address" }, { "internalType": "uint256", "name": "tokenId", "type": "uint256" }, { "internalType": "bytes32", "name": "keccak256ConfirmationHash", "type": "bytes32" } ], "name": "setConfirmation", "outputs": [], "stateMutability": "payable", "type": "function" } ]
 
       /*  Smart contract values */
-      let verificationCode = '';
-      let nftContractGlobal = '';  // for convenience
+      let verificationCodeGlobal = '';  // for convenience
+      let nftContractGlobal = '';
       let nftTokenGlobal = '';
+      let passwordGlobal = '';
+      let specialLinkGlobal = '';
 
       const render = async () => {
         const isLoggedIn = await ethEnabled();
@@ -135,6 +138,7 @@
         let givePermissionHtml = "";
         let setPasswordHtml = "";
         let memoryBlockHtml = "";
+        let getSpecialLinkHtml = "";
         const target = document.querySelector("#app");
         if (isLoggedIn) {
 
@@ -181,13 +185,13 @@
             <div class="container">
               <h1>1. Verification Code</h1>
               <div class="info">Get verification code for a gift.</div>
-              <div class="info">This code should use gift receiver to prove himself to backend, i.e. to book the gift. Thus, remember the code.</div>
+              <div class="info">This code should use gift receiver to prove himself to backend, i.e. to book the gift. The code will be saved for the 4th. block.</div>
               <form onsubmit="handleVerificationCode(event)">
                 <input type="text" name="nft_contract" class="full-width" required="required" placeholder="Nft Contract" value="${nftContractGlobal}"/>
                 <input type="text" name="nft_token" class="full-width" required="required" placeholder="Nft Token" value="${nftTokenGlobal}"/>
                 <button id="btn-send-verification-code" type="submit">Get</button>
                 <div class="info">Verification code will be shown below. Copy and give to receiver.</div>
-                <input type="text" name="verification_code" class="full-width" required="required" value="${verificationCode}" disabled />
+                <input type="text" name="verification_code" class="full-width" required="required" value="${verificationCodeGlobal}" disabled />
               </form>
 
             </div>
@@ -218,9 +222,33 @@
               </form>
             </div>
           `;
+          getSpecialLinkHtml = `
+            <div class="container">
+              <h1>4. Get The Special Link</h1>
+              <div class="info">Sumbit all data to the special link [string].</div>
+              <div class="info">The receiver will need the link to get all necesaries to own the gift finally on <a href="/receive">receiving page</a>.</div>
+              <form onsubmit="handleGetSpecialLink(event)">
+                <button id="btn-send-password" type="submit">Get Link</button>
+                <input type="text" name="special_link" class="full-width" required="required" value="${specialLinkGlobal}" disabled />
+              </form>
+            </div>
+          `;
         }
         target.innerHTML =
-          authHtml + userHtml + memoryBlockHtml + getVerificationCodeHtml + givePermissionHtml + setPasswordHtml;
+          authHtml + userHtml + memoryBlockHtml + getVerificationCodeHtml + givePermissionHtml + setPasswordHtml + getSpecialLinkHtml;
+      };
+
+      const handleGetSpecialLink = async (e) => {
+        e.preventDefault();
+        if (nftContractGlobal && nftTokenGlobal && verificationCodeGlobal && passwordGlobal) {
+          const userAddress = (await window.web3.eth.getAccounts())[0];
+          // todo: hardcode link encoding
+          specialLinkGlobal = btoa(
+                  userAddress + ":" + nftContractGlobal + ":" + nftTokenGlobal + ":" + verificationCodeGlobal + ":" + passwordGlobal
+          );
+          console.log('special link str', specialLinkGlobal);
+          render();
+        }
       };
 
       const handleRemember = async (e) => {
@@ -247,7 +275,7 @@
           btnSendTxn.innerText = "Getting...";
           console.log('send for code', nft_contract, nft_token);
 
-          verificationCode = await fetchVerificationCode(nft_contract, nft_token);
+          verificationCodeGlobal = await fetchVerificationCode(nft_contract, nft_token);
           render();
         }
 
@@ -258,6 +286,7 @@
         const nft_contract = new FormData(e.target).get("nft_contract");
         const nft_token = new FormData(e.target).get("nft_token");
         const password = new FormData(e.target).get("password");
+        passwordGlobal = password;
         const darilka_address = await fetchDarilkaAddress();
         if (nft_contract && nft_token && password) {
           const btnSendTxn = document.getElementById("btn-send-password");

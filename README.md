@@ -8,16 +8,13 @@ To note, all frontend logic is **inside client html** file
 and itself it consists of **pure frontend  html** that will migrate to reactApp in the future, 
 i.e. in the second milestone accroding to [Rarible proposal roadmap](https://gov.rarible.org/t/nft-gift-button-grant-proposal/263)
 
-## Requirement
-Prepare an NFT on https://rinkeby.rarible.com/ (for demonstration we use rinkeby test net).
 
-## Start
-Prepare `.env` according to [.env.example](.env.example) (coz we want to aware frontend what backend it should use) and
-```
-docker-compose -f docker-compose.prod.yml up
-```
+## Requirement
+- The running backend
+
 
 ## Demonstration Flow
+First, prepare NFT on https://rinkeby.rarible.com/ (for demonstration we use rinkeby test net).
 
 ### Send NFT 
 1. Go to http://localhost:8015/send
@@ -28,3 +25,10 @@ docker-compose -f docker-compose.prod.yml up
 1. Go to http://localhost:8015/receive
 2. Relogin as a receiver
 3. Complete steps
+
+
+## Start
+Prepare `.env` according to [.env.example](.env.example) (coz we want to aware frontend what backend it should use) and
+```
+docker-compose -f docker-compose.prod.yml up
+```
