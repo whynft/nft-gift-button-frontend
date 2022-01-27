@@ -83,14 +83,18 @@
         return res; // address, abi
       }
 
-      async function fetchVerificationCode(nft_contract, nft_token) {
+      async function fetchVerificationCode(nft_contract, nft_token, sender_address) {
         const response = await fetch(
                 "{{ BACKEND_VERIFICATION_CODE_API }}",
                 {
                   method: "POST",
                   mode: 'cors',
                   headers: { 'Content-Type': 'application/json',},
-                  body: JSON.stringify({nft_token: nft_token, nft_contract: nft_contract})
+                  body: JSON.stringify({
+                    nft_token: nft_token,
+                    nft_contract: nft_contract,
+                    sender_address: sender_address,
+                  })
                 }
         );
         const res = await response.json();
@@ -172,7 +176,7 @@
           memoryBlockHtml = `
             <div class="container">
               <h1>0. Memory Block</h1>
-              <div class="info">Use the block for convenience in the flow below.</div>
+              <div class="info">Use the block for convenience in the flow below: we will parse rarible link for you.</div>
               <div class="info">Thus, by submitting you do not need to fill the values below again and again for each blocks.</div>
               <form onsubmit="handleRemember(event)">
                 <input type="text" name="rarible_link" class="full-width" required="required" placeholder="Rarible Link"/>
@@ -184,7 +188,9 @@
             <div class="container">
               <h1>1. Verification Code</h1>
               <div class="info">Get verification code for a gift.</div>
-              <div class="info">This code should use gift receiver to prove himself to backend, i.e. to book the gift. The code will be saved for the 4th. block.</div>
+              <div class="info">
+              This code should use gift receiver to prove himself to backend, i.e. to book the gift.
+              The code will be auto-saved & propagated to the 4th. block  - do not need to remember it yourself.</div>
               <form onsubmit="handleVerificationCode(event)">
                 <input type="text" name="nft_contract" class="full-width" required="required" placeholder="Nft Contract" value="${nftContractGlobal}"/>
                 <input type="text" name="nft_token" class="full-width" required="required" placeholder="Nft Token" value="${nftTokenGlobal}"/>
@@ -212,7 +218,7 @@
             <div class="container">
               <h1>3. Set Password</h1>
               <div class="info">Set password  for the NFT stright into contract in a blockchain.</div>
-              <div class="info">You do not need to copy if you will use the final block and will generate special link.</div>
+              <div class="info">You do not need to copy & remember password if you will use the final block and will generate special link.</div>
               <form onsubmit="handleSetPassword(event)">
                 <input type="text" name="nft_contract" class="full-width" required="required" placeholder="Nft Contract" value="${nftContractGlobal}"/>
                 <input type="text" name="nft_token" class="full-width" required="required" placeholder="Nft Token" value="${nftTokenGlobal}"/>
@@ -225,8 +231,8 @@
           getSpecialLinkHtml = `
             <div class="container">
               <h1>4. Get The Special Link</h1>
-              <div class="info">Sumbit all data to the special link [string].</div>
-              <div class="info">The receiver will need the link to get all necesaries to own the gift finally on <a href="/receive">receiving page</a>.</div>
+              <div class="info">Combine all meta to the special link [string].</div>
+              <div class="info">The receiver will need the link to get all necesaries to own the gift finally on <a href="/receive">receiving page</a>. Copy the link!</div>
               <form onsubmit="handleGetSpecialLink(event)">
                 <button id="btn-send-password" type="submit">Get Link</button>
                 <input type="text" name="special_link" class="full-width" required="required" value="${specialLinkGlobal}" disabled />
@@ -268,14 +274,15 @@
         e.preventDefault();
         const nft_contract = new FormData(e.target).get("nft_contract");
         const nft_token = new FormData(e.target).get("nft_token");
+        const senderAddress = (await window.web3.eth.getAccounts())[0];
 
-        if (nft_contract && nft_token) {
+        if (nft_contract && nft_token && senderAddress) {
           const btnSendTxn = document.getElementById("btn-send-verification-code");
           btnSendTxn.disabled = true;
           btnSendTxn.innerText = "Getting...";
           console.log('send for code', nft_contract, nft_token);
 
-          verificationCodeGlobal = await fetchVerificationCode(nft_contract, nft_token);
+          verificationCodeGlobal = await fetchVerificationCode(nft_contract, nft_token, senderAddress);
           render();
         }
 

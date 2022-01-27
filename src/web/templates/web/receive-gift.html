@@ -82,7 +82,7 @@
         return res; // address, abi
       }
 
-      async function fetchPostBooking(nft_contract, nft_token, receiver_address, verification_code) {
+      async function fetchPostBooking(nft_contract, nft_token, sender_address, receiver_address, verification_code) {
         const response = await fetch(
                 "{{ BACKEND_BOOK_API }}",
                 {
@@ -90,6 +90,7 @@
                   mode: 'cors',
                   headers: { 'Content-Type': 'application/json',},
                   body: JSON.stringify({
+                    sender_address: sender_address,
                     receiver_address: receiver_address,
                     nft_token: nft_token,
                     nft_contract: nft_contract,
@@ -244,14 +245,14 @@
         const nft_token = new FormData(e.target).get("nft_token");
         const verification_code = new FormData(e.target).get("verification_code");
 
-        if (nft_contract && nft_token && verification_code) {
+        if (nft_contract && nft_token && verification_code && senderAddressGlobal) {
           const btnSendTxn = document.getElementById("btn-send-book");
           btnSendTxn.disabled = true;
           btnSendTxn.innerText = "Booking...";
 
           const receiver_address = (await window.web3.eth.getAccounts())[0];
 
-          await fetchPostBooking(nft_contract, nft_token, receiver_address, verification_code);
+          await fetchPostBooking(nft_contract, nft_token, senderAddressGlobal, receiver_address, verification_code);
           render();
         }
       };
