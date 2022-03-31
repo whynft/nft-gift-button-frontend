@@ -177,8 +177,11 @@
               console.error(e.message)
               return
             })
-        const darilkaContract = await fetchDarilka();
-        darilkaContractGlobal = new window.userWeb3.eth.Contract(darilkaContract.abi, darilkaContract.address);
+
+        if (!darilkaContractGlobal) {
+          const darilkaContract = await fetchDarilka();
+          darilkaContractGlobal = new window.userWeb3.eth.Contract(darilkaContract.abi, darilkaContract.address);
+        }
 
         // our html frames
         let userHtml = "";
