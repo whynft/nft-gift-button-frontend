@@ -67,9 +67,8 @@
       function getNftContractToken(link) {
         console.log(link);
         const linkElements = link.split("/");
-        const numbers = linkElements[linkElements.length - 1].split(":");
-        const nftToken = numbers[1].split("?")[0];
-        const nftContract = numbers[0];
+        const nftToken = linkElements[linkElements.length - 1];
+        const nftContract = linkElements[linkElements.length - 2];
         return [nftContract, nftToken]
       }
 
@@ -176,10 +175,10 @@
           memoryBlockHtml = `
             <div class="container">
               <h1>0. Memory Block</h1>
-              <div class="info">Use the block for convenience in the flow below: we will parse rarible link for you.</div>
+              <div class="info">Use the block for convenience in the flow below: we will parse Opensea link for you.</div>
               <div class="info">Thus, by submitting you do not need to fill the values below again and again for each blocks.</div>
               <form onsubmit="handleRemember(event)">
-                <input type="text" name="rarible_link" class="full-width" required="required" placeholder="Rarible Link"/>
+                <input type="text" name="link" class="full-width" required="required" placeholder="OpenSea Link"/>
                 <button id="btn-send-remember" type="submit">Remember & Insert</button>
               </form>
             </div>
@@ -259,9 +258,9 @@
 
       const handleRemember = async (e) => {
         e.preventDefault();
-        const raribleLink = new FormData(e.target).get("rarible_link");
-        if (raribleLink) {
-          const values = getNftContractToken(raribleLink);
+        const link = new FormData(e.target).get("link");
+        if (link) {
+          const values = getNftContractToken(link);
           nftContractGlobal = values[0];
           nftTokenGlobal = values[1];
 
