@@ -64,14 +64,7 @@
     </style>
     <script src="https://cdn.jsdelivr.net/npm/web3@1.3.4/dist/web3.min.js"></script>
     <script>
-      function getNftContractToken(link) {
-        const linkElements = link.split("/");
-        const numbers = linkElements[linkElements.length - 1].split(":");
-        const nftToken = numbers[1].split("?")[0];
-        const nftContract = numbers[0];
-        return [nftContract, nftToken]
-      }
-
+      // custom methods
       async function fetchDarilka() {
         const response = await fetch(
                 "{{ BACKEND_DARILKA_API }}",
@@ -102,19 +95,52 @@
         return res.address;
       }
 
-      // standart metamask behaviour to login
-      const ethEnabled = async () => {
-        if (window.ethereum) {
-          await window.ethereum.send('eth_requestAccounts');
-          window.web3 = new Web3(window.ethereum);
-          console.log(web3);
-          return true;
-        }
-        return false;
-      }
-
+      // global consts
+      window.userWeb3 = new Web3(window.ethereum)  // coz may be user already connect his metamask to www
+      // the document use cookie to identify if user loggedIn or desired to logout
+      // coz of in metamask to true logout user should do so with metamask!
+      const metaMaskLoggedInCookie = "metaMaskLoggedIn=true"
+      const metaMaskLoggedOutCookie = "metaMaskLoggedIn=false"
+      let currentUserAddressGlobal = ""
+      let darilkaContractGlobal = null
       const erc721Abi = [{ inputs: [ { internalType: "string", name: "name_", type: "string", }, { internalType: "string", name: "symbol_", type: "string", }, ], stateMutability: "nonpayable", type: "constructor", }, { anonymous: false, inputs: [ { indexed: true, internalType: "address", name: "owner", type: "address", }, { indexed: true, internalType: "address", name: "approved", type: "address", }, { indexed: true, internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "Approval", type: "event", }, { anonymous: false, inputs: [ { indexed: true, internalType: "address", name: "owner", type: "address", }, { indexed: true, internalType: "address", name: "operator", type: "address", }, { indexed: false, internalType: "bool", name: "approved", type: "bool", }, ], name: "ApprovalForAll", type: "event", }, { anonymous: false, inputs: [ { indexed: true, internalType: "address", name: "from", type: "address", }, { indexed: true, internalType: "address", name: "to", type: "address", }, { indexed: true, internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "Transfer", type: "event", }, { inputs: [ { internalType: "bytes4", name: "interfaceId", type: "bytes4", }, ], name: "supportsInterface", outputs: [ { internalType: "bool", name: "", type: "bool", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "address", name: "owner", type: "address", }, ], name: "balanceOf", outputs: [ { internalType: "uint256", name: "", type: "uint256", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "ownerOf", outputs: [ { internalType: "address", name: "", type: "address", }, ], stateMutability: "view", type: "function", }, { inputs: [], name: "name", outputs: [ { internalType: "string", name: "", type: "string", }, ], stateMutability: "view", type: "function", }, { inputs: [], name: "symbol", outputs: [ { internalType: "string", name: "", type: "string", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "tokenURI", outputs: [ { internalType: "string", name: "", type: "string", }, ], stateMutability: "view", type: "function", }, { inputs: [], name: "baseURI", outputs: [ { internalType: "string", name: "", type: "string", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "address", name: "owner", type: "address", }, { internalType: "uint256", name: "index", type: "uint256", }, ], name: "tokenOfOwnerByIndex", outputs: [ { internalType: "uint256", name: "", type: "uint256", }, ], stateMutability: "view", type: "function", }, { inputs: [], name: "totalSupply", outputs: [ { internalType: "uint256", name: "", type: "uint256", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "uint256", name: "index", type: "uint256", }, ], name: "tokenByIndex", outputs: [ { internalType: "uint256", name: "", type: "uint256", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "address", name: "to", type: "address", }, { internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "approve", outputs: [], stateMutability: "nonpayable", type: "function", }, { inputs: [ { internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "getApproved", outputs: [ { internalType: "address", name: "", type: "address", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "address", name: "operator", type: "address", }, { internalType: "bool", name: "approved", type: "bool", }, ], name: "setApprovalForAll", outputs: [], stateMutability: "nonpayable", type: "function", }, { inputs: [ { internalType: "address", name: "owner", type: "address", }, { internalType: "address", name: "operator", type: "address", }, ], name: "isApprovedForAll", outputs: [ { internalType: "bool", name: "", type: "bool", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "address", name: "from", type: "address", }, { internalType: "address", name: "to", type: "address", }, { internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "transferFrom", outputs: [], stateMutability: "nonpayable", type: "function", }, { inputs: [ { internalType: "address", name: "from", type: "address", }, { internalType: "address", name: "to", type: "address", }, { internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "safeTransferFrom", outputs: [], stateMutability: "nonpayable", type: "function", }, { inputs: [ { internalType: "address", name: "from", type: "address", }, { internalType: "address", name: "to", type: "address", }, { internalType: "uint256", name: "tokenId", type: "uint256", }, { internalType: "bytes", name: "_data", type: "bytes", }, ], name: "safeTransferFrom", outputs: [], stateMutability: "nonpayable", type: "function", }]
 
+      // login methods
+      function isMetaMaskLoggedInCookie() {
+        return !!document.cookie.split(';').filter((item) => item.includes(metaMaskLoggedInCookie)).length;
+      }
+
+      function deleteMetaMaskLoggedInCookie() {
+        document.cookie = metaMaskLoggedOutCookie;
+      }
+
+      const ethEnabled = async () => {
+        if (typeof window.ethereum !== 'undefined') {
+          console.log('MetaMask is installed!');
+          return true
+        }
+        return false
+      }
+
+      async function loginWithMetaMask() {
+        const accounts = await ethereum.request({ method: 'eth_requestAccounts' })
+          .catch((e) => {
+            console.error('could not login with metamask', e.message)
+            return
+          })
+        if (!accounts) {
+          return
+        }
+        window.userWeb3 = new Web3(window.ethereum)
+        document.cookie = metaMaskLoggedInCookie
+        console.log("new web3 created", window.userWeb3)
+      }
+
+      let authHtml = "";
+
+      // const that will be injected on a special moment
+      // i.e. link provided
+      // todo: mb these vars should not be global
       let nftContractGlobal = '';  // for convenience
       let nftTokenGlobal = '';
       let passwordGlobal = '';
@@ -122,48 +148,68 @@
       let senderAddressGlobal = '';
 
       const render = async () => {
-        const isLoggedIn = await ethEnabled();
-        console.log('logged in ');
-        console.log(isLoggedIn);
-        /* Show login form if user is not logged in */
-        let authHtml = `
-          <div class="container">
-            <h1>Please login with meta mask</h1>
-<!--            <form onsubmit="handleLogin(event)">-->
-<!--              <input type="email" name="email" required="required" placeholder="Enter your email" />-->
-<!--              <button type="submit">Send</button>-->
-<!--            </form>-->
-          </div>
-        `;
+
+        // Network evm subscribers
+        ethereum.on('accountsChanged', render);
+        ethereum.on('disconnect', render);
+
+        // init our EMV features on success login
+        if (!await ethEnabled() && darilkaContract.address) {
+          authHtml = `
+            <div class="container">
+              <h1>MetaMask Login</h1>
+              <div class="info">MetaMask is not installed or not enabled. Check <a href="https://www.geeksforgeeks.org/how-to-install-and-use-metamask-on-google-chrome/" target="_blank">instruction</a>.</div>
+              <button id="loginButtonId" disabled onclick="() => {}">Login is not enabled</button>
+            </div>
+          `;
+        } else {
+          authHtml = `
+            <div class="container">
+              <h1>MetaMask Login</h1>
+              <div class="info" id="loginInfo">Proceed login with Meta Mask.</div>
+              <button id="loginButtonId" onclick="handleLogin()">Login</button>
+            </div>
+          `;
+        }
+
+        const accounts = await window.userWeb3.eth.getAccounts()
+            .catch((e) => {
+              console.error(e.message)
+              return
+            })
+        const darilkaContract = await fetchDarilka();
+        darilkaContractGlobal = new window.userWeb3.eth.Contract(darilkaContract.abi, darilkaContract.address);
+
+        // our html frames
         let userHtml = "";
         let bookHtml = "";
         let transferHtml = "";
         let sumbitSpecialLinkHtml = "";
-        const target = document.querySelector("#app");
-        if (isLoggedIn) {
 
-          const network = await window.web3.eth.net.getNetworkType();
-          console.log('network');
-          console.log(network);
-          const userAddress = (await window.web3.eth.getAccounts())[0];
-          const userBalance = window.web3.utils.fromWei(
-            await window.web3.eth.getBalance(userAddress) // Balance is in wei
+        // where we will inject out htmls above
+        const target = document.querySelector("#app");
+
+        if (accounts.length && isMetaMaskLoggedInCookie()) {  // check both: metamask provider readiness & that user want to be logged in
+          const network = await window.userWeb3.eth.net.getNetworkType();
+          currentUserAddressGlobal = accounts[0];
+          const userBalance = window.userWeb3.utils.fromWei(
+            await window.userWeb3.eth.getBalance(currentUserAddressGlobal)
           );
-          console.log('balance');
-          console.log(userBalance);
+
+          console.log('Current user', currentUserAddressGlobal)
+          console.log('User balance', userBalance);
+
           authHtml = `
             <div class="container">
-              <h1>Logout</h1>
-              {{ test }}
-              <div class="info">To logout/relogin use your MetamaskApp and refresh the page.</div>
-              <button disabled onclick="handleLogout()">Logout</button>
+              <h1>MetaMask Login</h1>
+              <button onclick="handleLogout()">Logout</button>
             </div>
           `;
           userHtml = `
             <div class="container">
               <h1>Frontend Example for Darilka Contract | Receive Action</h1>
               <div class="info">
-                <a href="https://testnet.bscscan.com/address/${userAddress}" target="_blank">${userAddress}</a>
+                <a href="https://testnet.bscscan.com/address/${currentUserAddressGlobal}" target="_blank">${currentUserAddressGlobal}</a>
               </div>
               <h1>Network</h1>
               <div class="info">${network}</div>
@@ -190,7 +236,7 @@
                 <input type="text" name="nft_contract" class="full-width" required="required" placeholder="Nft Contract" value="${nftContractGlobal}"/>
                 <input type="text" name="nft_token" class="full-width" required="required" placeholder="Nft Token" value="${nftTokenGlobal}"/>
                 <input type="text" name="verification_code" class="full-width" required="required" placeholder="Verification Code" value="${verificationCodeGlobal}"/>
-                <input disabled type="text" name="receiver_address" class="full-width" required="required" value="${userAddress}"/>
+                <input disabled type="text" name="receiver_address" class="full-width" required="required" value="${currentUserAddressGlobal}"/>
 
                 <button id="btn-send-book" type="submit">Book</button>
               </form>
@@ -204,7 +250,7 @@
                 <input type="text" name="nft_contract" class="full-width" required="required" placeholder="Nft Contract" value="${nftContractGlobal}"/>
                 <input type="text" name="nft_token" class="full-width" required="required" placeholder="Nft Token" value="${nftTokenGlobal}"/>
                 <input type="text" name="sender_address" class="full-width" required="required" placeholder="Sender address" value="${senderAddressGlobal}"/>
-                <input disabled type="text" name="receiver_address" class="full-width" required="required" value="${userAddress}"/>
+                <input disabled type="text" name="receiver_address" class="full-width" required="required" value="${currentUserAddressGlobal}"/>
                 <input type="text" name="password" class="full-width" required="required" placeholder="Password" value="${passwordGlobal}"/>
 
                 <button id="btn-send-transfer" type="submit">Transfer</button>
@@ -250,9 +296,7 @@
           btnSendTxn.disabled = true;
           btnSendTxn.innerText = "Booking...";
 
-          const receiver_address = (await window.web3.eth.getAccounts())[0];
-
-          await fetchPostBooking(nft_contract, nft_token, senderAddressGlobal, receiver_address, verification_code);
+          await fetchPostBooking(nft_contract, nft_token, senderAddressGlobal, currentUserAddressGlobal, verification_code);
           render();
         }
       };
@@ -269,18 +313,17 @@
           btnSendTxn.disabled = true;
           btnSendTxn.innerText = "Transferring...";
 
-          const receiver_address = (await window.web3.eth.getAccounts())[0];
 
           const darilka = await fetchDarilka();
 
-          let contract = new window.web3.eth.Contract(
+          let contract = new window.userWeb3.eth.Contract(
               darilka.abi,
               darilka.address
           );
           const result = await contract.methods
-            .performTransferNFT(sender_address, receiver_address, nft_contract, nft_token, password)
+            .performTransferNFT(sender_address, currentUserAddressGlobal, nft_contract, nft_token, password)
             .send({
-              from: receiver_address,
+              from: currentUserAddressGlobal,
               gas: 1000000,
               gasPrice: '5000000000'
             })
@@ -289,7 +332,14 @@
         }
       };
 
+      // ---- common handlers ----
+      const handleLogin = async () => {
+        await loginWithMetaMask();
+        render()
+      }
+
       const handleLogout = async () => {
+        deleteMetaMaskLoggedInCookie();
         render();
       };
     </script>
