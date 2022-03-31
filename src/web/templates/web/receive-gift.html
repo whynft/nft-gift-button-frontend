@@ -104,6 +104,9 @@
       let currentUserAddressGlobal = ""
       let darilkaContractGlobal = null
       const erc721Abi = [{ inputs: [ { internalType: "string", name: "name_", type: "string", }, { internalType: "string", name: "symbol_", type: "string", }, ], stateMutability: "nonpayable", type: "constructor", }, { anonymous: false, inputs: [ { indexed: true, internalType: "address", name: "owner", type: "address", }, { indexed: true, internalType: "address", name: "approved", type: "address", }, { indexed: true, internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "Approval", type: "event", }, { anonymous: false, inputs: [ { indexed: true, internalType: "address", name: "owner", type: "address", }, { indexed: true, internalType: "address", name: "operator", type: "address", }, { indexed: false, internalType: "bool", name: "approved", type: "bool", }, ], name: "ApprovalForAll", type: "event", }, { anonymous: false, inputs: [ { indexed: true, internalType: "address", name: "from", type: "address", }, { indexed: true, internalType: "address", name: "to", type: "address", }, { indexed: true, internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "Transfer", type: "event", }, { inputs: [ { internalType: "bytes4", name: "interfaceId", type: "bytes4", }, ], name: "supportsInterface", outputs: [ { internalType: "bool", name: "", type: "bool", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "address", name: "owner", type: "address", }, ], name: "balanceOf", outputs: [ { internalType: "uint256", name: "", type: "uint256", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "ownerOf", outputs: [ { internalType: "address", name: "", type: "address", }, ], stateMutability: "view", type: "function", }, { inputs: [], name: "name", outputs: [ { internalType: "string", name: "", type: "string", }, ], stateMutability: "view", type: "function", }, { inputs: [], name: "symbol", outputs: [ { internalType: "string", name: "", type: "string", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "tokenURI", outputs: [ { internalType: "string", name: "", type: "string", }, ], stateMutability: "view", type: "function", }, { inputs: [], name: "baseURI", outputs: [ { internalType: "string", name: "", type: "string", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "address", name: "owner", type: "address", }, { internalType: "uint256", name: "index", type: "uint256", }, ], name: "tokenOfOwnerByIndex", outputs: [ { internalType: "uint256", name: "", type: "uint256", }, ], stateMutability: "view", type: "function", }, { inputs: [], name: "totalSupply", outputs: [ { internalType: "uint256", name: "", type: "uint256", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "uint256", name: "index", type: "uint256", }, ], name: "tokenByIndex", outputs: [ { internalType: "uint256", name: "", type: "uint256", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "address", name: "to", type: "address", }, { internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "approve", outputs: [], stateMutability: "nonpayable", type: "function", }, { inputs: [ { internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "getApproved", outputs: [ { internalType: "address", name: "", type: "address", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "address", name: "operator", type: "address", }, { internalType: "bool", name: "approved", type: "bool", }, ], name: "setApprovalForAll", outputs: [], stateMutability: "nonpayable", type: "function", }, { inputs: [ { internalType: "address", name: "owner", type: "address", }, { internalType: "address", name: "operator", type: "address", }, ], name: "isApprovedForAll", outputs: [ { internalType: "bool", name: "", type: "bool", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "address", name: "from", type: "address", }, { internalType: "address", name: "to", type: "address", }, { internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "transferFrom", outputs: [], stateMutability: "nonpayable", type: "function", }, { inputs: [ { internalType: "address", name: "from", type: "address", }, { internalType: "address", name: "to", type: "address", }, { internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "safeTransferFrom", outputs: [], stateMutability: "nonpayable", type: "function", }, { inputs: [ { internalType: "address", name: "from", type: "address", }, { internalType: "address", name: "to", type: "address", }, { internalType: "uint256", name: "tokenId", type: "uint256", }, { internalType: "bytes", name: "_data", type: "bytes", }, ], name: "safeTransferFrom", outputs: [], stateMutability: "nonpayable", type: "function", }]
+      // user stage
+      let userStageGlobal = 0;
+      const DEBUG = true;
 
       // login methods
       function isMetaMaskLoggedInCookie() {
@@ -166,7 +169,7 @@
           authHtml = `
             <div class="container">
               <h1>MetaMask Login</h1>
-              <div class="info" id="loginInfo">Proceed login with Meta Mask.</div>
+              <div class="info" id="loginInfo">Proceed login with MetaMask.</div>
               <button id="loginButtonId" onclick="handleLogin()">Login</button>
             </div>
           `;
@@ -204,62 +207,61 @@
 
           authHtml = `
             <div class="container">
-              <h1>MetaMask Login</h1>
-              <button onclick="handleLogout()">Logout</button>
-            </div>
-          `;
-          userHtml = `
-            <div class="container">
-              <h1>Frontend Example for Darilka Contract | Receive Action</h1>
+              <h1>User</h1>
               <div class="info">
                 <a href="https://testnet.bscscan.com/address/${currentUserAddressGlobal}" target="_blank">${currentUserAddressGlobal}</a>
               </div>
               <h1>Network</h1>
               <div class="info">${network}</div>
-              <h1>Balance</h1>
-              <div class="info">${userBalance} ETH</div>
+              <button onclick="handleLogout()">Logout</button>
             </div>
           `;
-          sumbitSpecialLinkHtml = `
+          if (userStageGlobal === 0 || DEBUG) {
+            sumbitSpecialLinkHtml = `
             <div class="container">
               <h1>1. Past A Special Link</h1>
               <div class="info">A sender should give you the link.</div>
-              <div class="info">Thus, by submitting the link all necessary info fill be filled, and you just should complete the following steps.</div>
+              <div class="info">Thus, by submitting the link all necessary info fill be filled automatically, and only your acceptance on each step will be awaiting.</div>
               <form onsubmit="handleSpecialLink(event)">
                 <input type="text" name="special_link" class="full-width" required="required" placeholder="Special Link"/>
                 <button id="btn-send-link" type="submit">Submit</button>
               </form>
             </div>
           `;
-          bookHtml = `
-            <div class="container">
-              <h1>2. Book A Gift Through Backend</h1>
-              <div class="info">Firstly you should book the gift with help of centralized backend. Thus, no one who looks to chain will pretend for the gift.</div>
-              <form onsubmit="handleBook(event)">
-                <input type="text" name="nft_contract" class="full-width" required="required" placeholder="Nft Contract" value="${nftContractGlobal}"/>
-                <input type="text" name="nft_token" class="full-width" required="required" placeholder="Nft Token" value="${nftTokenGlobal}"/>
-                <input type="text" name="verification_code" class="full-width" required="required" placeholder="Verification Code" value="${verificationCodeGlobal}"/>
-                <input disabled type="text" name="receiver_address" class="full-width" required="required" value="${currentUserAddressGlobal}"/>
+          }
+          if (userStageGlobal === 1 || DEBUG) {
+            bookHtml = `
+              <div class="container">
+                <h1>2. Book A Gift Through Backend</h1>
+                <div class="info">Firstly you should book the gift with help of centralized backend. Thus, no one who looks to chain will pretend for the gift.</div>
+                <form onsubmit="handleBook(event)">
+                  <input type="text" name="nft_contract" class="full-width" required="required" placeholder="Nft Contract" value="${nftContractGlobal}"/>
+                  <input type="text" name="nft_token" class="full-width" required="required" placeholder="Nft Token" value="${nftTokenGlobal}"/>
+                  <input type="text" name="verification_code" class="full-width" required="required" placeholder="Verification Code" value="${verificationCodeGlobal}"/>
+                  <input disabled type="text" name="receiver_address" class="full-width" required="required" value="${currentUserAddressGlobal}"/>
 
-                <button id="btn-send-book" type="submit">Book</button>
-              </form>
-            </div>
-          `;
-          transferHtml = `
-            <div class="container">
-              <h1>3. Thransfer The Gift Through Chain</h1>
-              <div class="info">You will use allocated NFT by sender in advance.</div>
-              <form onsubmit="handleTransfer(event)">
-                <input type="text" name="nft_contract" class="full-width" required="required" placeholder="Nft Contract" value="${nftContractGlobal}"/>
-                <input type="text" name="nft_token" class="full-width" required="required" placeholder="Nft Token" value="${nftTokenGlobal}"/>
-                <input type="text" name="sender_address" class="full-width" required="required" placeholder="Sender address" value="${senderAddressGlobal}"/>
-                <input disabled type="text" name="receiver_address" class="full-width" required="required" value="${currentUserAddressGlobal}"/>
-                <input type="text" name="password" class="full-width" required="required" placeholder="Password" value="${passwordGlobal}"/>
+                  <button id="btn-send-book" type="submit">Book</button>
+                </form>
+              </div>
+            `;
+          }
+          if (userStageGlobal === 2 || DEBUG) {
+            transferHtml = `
+              <div class="container">
+                <h1>3. Thransfer The Gift Through Chain</h1>
+                <div class="info">You will use allocated NFT by sender in advance. But coins transferring may need a few seconds to be completed since the previos step.</div>
+                <form onsubmit="handleTransfer(event)">
+                  <input type="text" name="nft_contract" class="full-width" required="required" placeholder="Nft Contract" value="${nftContractGlobal}"/>
+                  <input type="text" name="nft_token" class="full-width" required="required" placeholder="Nft Token" value="${nftTokenGlobal}"/>
+                  <input type="text" name="sender_address" class="full-width" required="required" placeholder="Sender address" value="${senderAddressGlobal}"/>
+                  <input disabled type="text" name="receiver_address" class="full-width" required="required" value="${currentUserAddressGlobal}"/>
+                  <input type="text" name="password" class="full-width" required="required" placeholder="Password" value="${passwordGlobal}"/>
 
-                <button id="btn-send-transfer" type="submit">Transfer</button>
-              </form>
-            </div>
-          `;
+                  <button id="btn-send-transfer" type="submit">Transfer</button>
+                </form>
+              </div>
+            `;
+          }
         }
         target.innerHTML =
           authHtml + userHtml + sumbitSpecialLinkHtml + bookHtml + transferHtml;
@@ -284,6 +286,8 @@
           verificationCodeGlobal = values[3];
           passwordGlobal = values[4];
 
+          userStageGlobal = 1;
+
           render();
         }
       };
@@ -300,6 +304,9 @@
           btnSendTxn.innerText = "Booking...";
 
           await fetchPostBooking(nft_contract, nft_token, senderAddressGlobal, currentUserAddressGlobal, verification_code);
+
+          userStageGlobal = 2;
+
           render();
         }
       };
