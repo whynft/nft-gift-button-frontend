@@ -221,7 +221,7 @@
             <div class="container">
               <h1>1. Past A Special Link</h1>
               <div class="info">A sender should give you the special link.</div>
-              <div class="info">By submitting the link all necessary info fill be filled automatically, and only your acceptance on each step will be awaiting.</div>
+              <div class="info">By submitting the link all necessary info fill be filled automatically, and only your acceptance on each step will be awaited.</div>
               <form onsubmit="handleSpecialLink(event)">
                 <input type="text" name="special_link" class="full-width" required="required" placeholder="Special Link"/>
                 <button id="btn-send-link" type="submit">Submit</button>
@@ -233,13 +233,9 @@
             bookHtml = `
               <div class="container">
                 <h1>2. Book A Gift Through Backend</h1>
-                <div class="info">Firstly you should book the gift with help of centralized backend. Thus, no one who looks to chain will pretend for the gift.</div>
+                <div class="info">Firstly you should book the gift with help of centralized backend. Thus, no one who looks to chain will pretend for the gift in the future.</div>
+                <div class="info">In addition, a little amoun of coins will be transferred to your account to make it possible to initiate NFT transfer from you account (but it may takes a few seconds).</div>
                 <form onsubmit="handleBook(event)">
-                  <input type="text" name="nft_contract" class="full-width" required="required" placeholder="Nft Contract" value="${nftContractGlobal}"/>
-                  <input type="text" name="nft_token" class="full-width" required="required" placeholder="Nft Token" value="${nftTokenGlobal}"/>
-                  <input type="text" name="verification_code" class="full-width" required="required" placeholder="Verification Code" value="${verificationCodeGlobal}"/>
-                  <input disabled type="text" name="receiver_address" class="full-width" required="required" value="${currentUserAddressGlobal}"/>
-
                   <button id="btn-send-book" type="submit">Book</button>
                 </form>
               </div>
@@ -251,12 +247,6 @@
                 <h1>3. Thransfer The Gift Through Chain</h1>
                 <div class="info">You will use allocated NFT by sender in advance. But coins transferring may need a few seconds to be completed since the previos step.</div>
                 <form onsubmit="handleTransfer(event)">
-                  <input type="text" name="nft_contract" class="full-width" required="required" placeholder="Nft Contract" value="${nftContractGlobal}"/>
-                  <input type="text" name="nft_token" class="full-width" required="required" placeholder="Nft Token" value="${nftTokenGlobal}"/>
-                  <input type="text" name="sender_address" class="full-width" required="required" placeholder="Sender address" value="${senderAddressGlobal}"/>
-                  <input disabled type="text" name="receiver_address" class="full-width" required="required" value="${currentUserAddressGlobal}"/>
-                  <input type="text" name="password" class="full-width" required="required" placeholder="Password" value="${passwordGlobal}"/>
-
                   <button id="btn-send-transfer" type="submit">Transfer</button>
                 </form>
               </div>
