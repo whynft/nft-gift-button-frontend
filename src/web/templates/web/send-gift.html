@@ -65,10 +65,22 @@
     <script src="https://cdn.jsdelivr.net/npm/web3@1.3.4/dist/web3.min.js"></script>
     <script>
       function getNftContractToken(link) {
-        console.log(link);
+        console.log("Will parse link:", link);
         const linkElements = link.split("/");
-        const nftToken = linkElements[linkElements.length - 1];
-        const nftContract = linkElements[linkElements.length - 2];
+        let nftContract, nftToken;
+
+        if (linkElements.some(word => word.split('.').some(w => w === 'opensea') )) {
+          nftContract = linkElements[linkElements.length - 2];
+          nftToken = linkElements[linkElements.length - 1];
+        } else if (linkElements.some(word => word.split('.').some(w => w === 'rarible') )) {
+          const numbers = linkElements[linkElements.length - 1].split(":");
+          nftContract = numbers[0];
+          nftToken = numbers[1].split("?")[0];
+        } else {
+          // means manual insert with / delimiter
+          nftContract = linkElements[0];
+          nftToken = linkElements[1];
+        }
         return [nftContract, nftToken]
       }
 
@@ -175,10 +187,10 @@
           memoryBlockHtml = `
             <div class="container">
               <h1>0. Memory Block</h1>
-              <div class="info">Use the block for convenience in the flow below: we will parse Opensea link for you.</div>
+              <div class="info">Use the block for convenience in the flow below: we will parse Opensea or Rarible or manual contract/tokenId link for you.</div>
               <div class="info">Thus, by submitting you do not need to fill the values below again and again for each blocks.</div>
               <form onsubmit="handleRemember(event)">
-                <input type="text" name="link" class="full-width" required="required" placeholder="OpenSea Link"/>
+                <input type="text" name="link" class="full-width" required="required" placeholder="Past Your Link"/>
                 <button id="btn-send-remember" type="submit">Remember & Insert</button>
               </form>
             </div>
@@ -264,7 +276,7 @@
           nftContractGlobal = values[0];
           nftTokenGlobal = values[1];
 
-          console.log('remember values to global params...');
+          console.log('remember values as global params...');
           render();
         }
       };
