@@ -324,14 +324,20 @@
           const contractCommission = parseInt(await contract.methods.commission().call());
           const weiToContract = amountForReceiver + contractCommission;
 
-          const result = await contract.methods
-            .setConfirmation(nft_contract, nft_token, passwordHash)
-            .send({
-              value: weiToContract.toString(),
-              from: userAddress,
-              })
-          console.log("result of setting password: ", result);
-          render();
+          try {
+            const result = await contract.methods
+                    .setConfirmation(nft_contract, nft_token, passwordHash)
+                    .send({
+                      value: weiToContract.toString(),
+                      from: userAddress,
+                    })
+            console.log("result of setting password: ", result);
+            render();
+          } catch (e) {
+            console.log(e);
+            window.alert("transaction failed, for more info check transaction via transaction hash");
+            window.alert(e);
+          }
         }
       };
 
@@ -351,13 +357,19 @@
               erc721Abi,
               nft_contract
           );
-          const result = await contract.methods
-            .approve(darilka.address, nft_token)
-            .send({
-              from: userAddress,
-              });
-          console.log("result of granting permission: ", result);
-          render();
+          try {
+            const result = await contract.methods
+                    .approve(darilka.address, nft_token)
+                    .send({
+                      from: userAddress,
+                    });
+            console.log("result of granting permission: ", result);
+            render();
+          } catch(e) {
+            console.log(e);
+            window.alert("transaction failed, for more info check transaction via transaction hash");
+            window.alert(e);
+          }
         }
       };
 

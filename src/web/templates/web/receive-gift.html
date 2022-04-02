@@ -261,7 +261,8 @@
               <div class="container">
                 <h1>Finally</h1>
                 <div class="info">Your gift is transferred successfully.</div>
-                <div class="info">You could check that you are an owner of the NFT via OpenSea, Rarible, other NFT-marketplaces or even via wallet app.</div>
+                <div class="info">You could check that you are an owner of the NFT via OpenSea, Rarible, other NFT-marketplaces or even via wallet app (but indexing process may take a while).</div>
+                <div class="info">Transaction hash: .</div>
                 <div class="info">To receive another gift merely refresh the page.</div>
               </div>
             `;
@@ -327,16 +328,22 @@
               darilka.abi,
               darilka.address
           );
-          const result = await contract.methods
-            .performTransferNFT(senderAddressGlobal, currentUserAddressGlobal, nftContractGlobal, nftTokenGlobal, passwordGlobal)
-            .send({
-              from: currentUserAddressGlobal,
-            })
-          console.log("result of transferring: ", result);
+          try {
+            const result = await contract.methods
+                    .performTransferNFT(senderAddressGlobal, currentUserAddressGlobal, nftContractGlobal, nftTokenGlobal, passwordGlobal)
+                    .send({
+                      from: currentUserAddressGlobal,
+                    })
+            console.log("result of transferring: ", result);
 
-          userStageGlobal = 3;
+            userStageGlobal = 3;
 
-          render();
+            render();
+          } catch (e) {
+            console.log(e);
+            window.alert("transaction failed, for more info check transaction via transaction hash");
+            window.alert(e);
+          }
         }
       };
 
