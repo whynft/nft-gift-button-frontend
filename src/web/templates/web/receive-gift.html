@@ -197,7 +197,7 @@
         const target = document.querySelector("#app");
 
         if (accounts.length && isMetaMaskLoggedInCookie()) {  // check both: metamask provider readiness & that user want to be logged in
-          const network = await window.userWeb3.eth.net.getNetworkType();
+          const networkId = await window.userWeb3.eth.net.getId();
           currentUserAddressGlobal = accounts[0];
           const userBalance = window.userWeb3.utils.fromWei(
             await window.userWeb3.eth.getBalance(currentUserAddressGlobal)
@@ -212,8 +212,8 @@
               <div class="info">
                 <a href="https://mumbai.polygonscan.com/address/${currentUserAddressGlobal}" target="_blank">${currentUserAddressGlobal}</a>
               </div>
-              <h1>Network</h1>
-              <div class="info">${network}</div>
+              <h1>NetworkId</h1>
+              <div class="info">Your NetworkId: ${networkId}</div>
               <button onclick="handleLogout()">Logout</button>
             </div>
           `;
