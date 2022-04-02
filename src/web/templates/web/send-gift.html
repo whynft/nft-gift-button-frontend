@@ -176,7 +176,7 @@
             <div class="container">
               <h1>Frontend Example for Darilka Contract | Send Action</h1>
               <div class="info">
-                <a href="https://testnet.bscscan.com/address/${userAddress}" target="_blank">${userAddress}</a>
+                <a href="https://mumbai.polygonscan.com/address/${userAddress}" target="_blank">${userAddress}</a>
               </div>
               <h1>Network</h1>
               <div class="info">${network}</div>
@@ -320,13 +320,16 @@
           const passwordHash = await web3.utils.keccak256(password);
           console.log("passwordHash", passwordHash);
 
+          const amountForReceiver = parseInt(await contract.methods.amountForReceiver().call());
+          const contractCommission = parseInt(await contract.methods.commission().call());
+          const weiToContract = amountForReceiver + contractCommission;
+
           const result = await contract.methods
             .setConfirmation(nft_contract, nft_token, passwordHash)
             .send({
-              value: '10000000000000000',  // todo
+              value: weiToContract.toString(),
               from: userAddress,
-              gas: 1500000,
-              gasPrice: '30000000000'})  // todo
+              })
           console.log("result of setting password: ", result);
           render();
         }
@@ -352,8 +355,7 @@
             .approve(darilka.address, nft_token)
             .send({
               from: userAddress,
-              gas: 1500000,
-              gasPrice: '30000000000'});  // todo
+              });
           console.log("result of granting permission: ", result);
           render();
         }

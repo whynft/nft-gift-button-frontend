@@ -210,7 +210,7 @@
             <div class="container">
               <h1>User</h1>
               <div class="info">
-                <a href="https://testnet.bscscan.com/address/${currentUserAddressGlobal}" target="_blank">${currentUserAddressGlobal}</a>
+                <a href="https://mumbai.polygonscan.com/address/${currentUserAddressGlobal}" target="_blank">${currentUserAddressGlobal}</a>
               </div>
               <h1>Network</h1>
               <div class="info">${network}</div>
@@ -328,8 +328,6 @@
             .performTransferNFT(senderAddressGlobal, currentUserAddressGlobal, nftContractGlobal, nftTokenGlobal, passwordGlobal)
             .send({
               from: currentUserAddressGlobal,
-              gas: 1000000,
-              gasPrice: '5000000000'
             })
           console.log("result of transferring: ", result);
 
