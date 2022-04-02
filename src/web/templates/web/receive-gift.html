@@ -106,7 +106,7 @@
       const erc721Abi = [{ inputs: [ { internalType: "string", name: "name_", type: "string", }, { internalType: "string", name: "symbol_", type: "string", }, ], stateMutability: "nonpayable", type: "constructor", }, { anonymous: false, inputs: [ { indexed: true, internalType: "address", name: "owner", type: "address", }, { indexed: true, internalType: "address", name: "approved", type: "address", }, { indexed: true, internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "Approval", type: "event", }, { anonymous: false, inputs: [ { indexed: true, internalType: "address", name: "owner", type: "address", }, { indexed: true, internalType: "address", name: "operator", type: "address", }, { indexed: false, internalType: "bool", name: "approved", type: "bool", }, ], name: "ApprovalForAll", type: "event", }, { anonymous: false, inputs: [ { indexed: true, internalType: "address", name: "from", type: "address", }, { indexed: true, internalType: "address", name: "to", type: "address", }, { indexed: true, internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "Transfer", type: "event", }, { inputs: [ { internalType: "bytes4", name: "interfaceId", type: "bytes4", }, ], name: "supportsInterface", outputs: [ { internalType: "bool", name: "", type: "bool", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "address", name: "owner", type: "address", }, ], name: "balanceOf", outputs: [ { internalType: "uint256", name: "", type: "uint256", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "ownerOf", outputs: [ { internalType: "address", name: "", type: "address", }, ], stateMutability: "view", type: "function", }, { inputs: [], name: "name", outputs: [ { internalType: "string", name: "", type: "string", }, ], stateMutability: "view", type: "function", }, { inputs: [], name: "symbol", outputs: [ { internalType: "string", name: "", type: "string", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "tokenURI", outputs: [ { internalType: "string", name: "", type: "string", }, ], stateMutability: "view", type: "function", }, { inputs: [], name: "baseURI", outputs: [ { internalType: "string", name: "", type: "string", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "address", name: "owner", type: "address", }, { internalType: "uint256", name: "index", type: "uint256", }, ], name: "tokenOfOwnerByIndex", outputs: [ { internalType: "uint256", name: "", type: "uint256", }, ], stateMutability: "view", type: "function", }, { inputs: [], name: "totalSupply", outputs: [ { internalType: "uint256", name: "", type: "uint256", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "uint256", name: "index", type: "uint256", }, ], name: "tokenByIndex", outputs: [ { internalType: "uint256", name: "", type: "uint256", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "address", name: "to", type: "address", }, { internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "approve", outputs: [], stateMutability: "nonpayable", type: "function", }, { inputs: [ { internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "getApproved", outputs: [ { internalType: "address", name: "", type: "address", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "address", name: "operator", type: "address", }, { internalType: "bool", name: "approved", type: "bool", }, ], name: "setApprovalForAll", outputs: [], stateMutability: "nonpayable", type: "function", }, { inputs: [ { internalType: "address", name: "owner", type: "address", }, { internalType: "address", name: "operator", type: "address", }, ], name: "isApprovedForAll", outputs: [ { internalType: "bool", name: "", type: "bool", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "address", name: "from", type: "address", }, { internalType: "address", name: "to", type: "address", }, { internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "transferFrom", outputs: [], stateMutability: "nonpayable", type: "function", }, { inputs: [ { internalType: "address", name: "from", type: "address", }, { internalType: "address", name: "to", type: "address", }, { internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "safeTransferFrom", outputs: [], stateMutability: "nonpayable", type: "function", }, { inputs: [ { internalType: "address", name: "from", type: "address", }, { internalType: "address", name: "to", type: "address", }, { internalType: "uint256", name: "tokenId", type: "uint256", }, { internalType: "bytes", name: "_data", type: "bytes", }, ], name: "safeTransferFrom", outputs: [], stateMutability: "nonpayable", type: "function", }]
       // user stage
       let userStageGlobal = 0;
-      const DEBUG = true;
+      const DEBUG = false;
 
       // login methods
       function isMetaMaskLoggedInCookie() {
@@ -191,6 +191,7 @@
         let bookHtml = "";
         let transferHtml = "";
         let sumbitSpecialLinkHtml = "";
+        let resultHtml = "";
 
         // where we will inject out htmls above
         const target = document.querySelector("#app");
@@ -234,7 +235,7 @@
               <div class="container">
                 <h1>2. Book A Gift Through Backend</h1>
                 <div class="info">Firstly you should book the gift with help of centralized backend. Thus, no one who looks to chain will pretend for the gift in the future.</div>
-                <div class="info">In addition, a little amoun of coins will be transferred to your account to make it possible to initiate NFT transfer from you account (but it may takes a few seconds).</div>
+                <div class="info">In addition, a little amount of coins will be transferred to your account to make it possible to initiate NFT transfer from you account (but it may take a few seconds).</div>
                 <form onsubmit="handleBook(event)">
                   <button id="btn-send-book" type="submit">Book</button>
                 </form>
@@ -244,17 +245,27 @@
           if (userStageGlobal === 2 || DEBUG) {
             transferHtml = `
               <div class="container">
-                <h1>3. Thransfer The Gift Through Chain</h1>
-                <div class="info">You will use allocated NFT by sender in advance. But coins transferring may need a few seconds to be completed since the previos step.</div>
+                <h1>3. Transfer The Gift Through Chain</h1>
+                <div class="info">You will use allocated coins by sender in advance. Note, that coins transferring may need a few seconds to be completed since the previous step.</div>
                 <form onsubmit="handleTransfer(event)">
                   <button id="btn-send-transfer" type="submit">Transfer</button>
                 </form>
               </div>
             `;
           }
+          if (userStageGlobal === 3 || DEBUG) {
+            resultHtml = `
+              <div class="container">
+                <h1>Finally</h1>
+                <div class="info">Your gift is transferred successfully.</div>
+                <div class="info">You could check that you are an owner of the NFT via OpenSea, Rarible, other NFT-marketplaces or even via wallet app.</div>
+                <div class="info">To receive another gift merely refresh the page.</div>
+              </div>
+            `;
+          }
         }
         target.innerHTML =
-          authHtml + userHtml + sumbitSpecialLinkHtml + bookHtml + transferHtml;
+          authHtml + userHtml + sumbitSpecialLinkHtml + bookHtml + transferHtml + resultHtml;
       };
 
       const handleSpecialLink = async (e) => {
@@ -284,16 +295,13 @@
 
       const handleBook = async (e) => {
         e.preventDefault();
-        const nft_contract = new FormData(e.target).get("nft_contract");
-        const nft_token = new FormData(e.target).get("nft_token");
-        const verification_code = new FormData(e.target).get("verification_code");
 
-        if (nft_contract && nft_token && verification_code && senderAddressGlobal) {
+        if (nftContractGlobal && nftTokenGlobal && verificationCodeGlobal && senderAddressGlobal) {
           const btnSendTxn = document.getElementById("btn-send-book");
           btnSendTxn.disabled = true;
           btnSendTxn.innerText = "Booking...";
 
-          await fetchPostBooking(nft_contract, nft_token, senderAddressGlobal, currentUserAddressGlobal, verification_code);
+          await fetchPostBooking(nftContractGlobal, nftTokenGlobal, senderAddressGlobal, currentUserAddressGlobal, verificationCodeGlobal);
 
           userStageGlobal = 2;
 
@@ -303,12 +311,8 @@
 
       const handleTransfer = async (e) => {
         e.preventDefault();
-        const nft_contract = new FormData(e.target).get("nft_contract");
-        const nft_token = new FormData(e.target).get("nft_token");
-        const password = new FormData(e.target).get("password");
-        const sender_address = new FormData(e.target).get("sender_address");
 
-        if (nft_contract && nft_token && password && sender_address) {
+        if (nftContractGlobal && nftTokenGlobal && passwordGlobal && senderAddressGlobal) {
           const btnSendTxn = document.getElementById("btn-send-transfer");
           btnSendTxn.disabled = true;
           btnSendTxn.innerText = "Transferring...";
@@ -321,13 +325,16 @@
               darilka.address
           );
           const result = await contract.methods
-            .performTransferNFT(sender_address, currentUserAddressGlobal, nft_contract, nft_token, password)
+            .performTransferNFT(senderAddressGlobal, currentUserAddressGlobal, nftContractGlobal, nftTokenGlobal, passwordGlobal)
             .send({
               from: currentUserAddressGlobal,
               gas: 1000000,
               gasPrice: '5000000000'
             })
           console.log("result of transferring: ", result);
+
+          userStageGlobal = 3;
+
           render();
         }
       };
