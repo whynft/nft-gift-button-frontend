@@ -233,12 +233,12 @@
             <div class="container">
               <h1>User</h1>
               <div class="info">
-                <a href="https://polygonscan.com/address/${currentUserAddressGlobal}" target="_blank">${currentUserAddressGlobal}</a>
+                <a href="${blockchainScanUrl}/${currentUserAddressGlobal}" target="_blank">${currentUserAddressGlobal}</a>
               </div>
               <h1>NetworkId</h1>
               <div class="info">
-                Currently frontend works for 137 (Polygon mainnet network id). Your NetworkId: ${networkId}.
-                To change, e.g. <a href="https://coinmarketcap.com/alexandria/article/connect-metamask-to-polygon-network">use a link</a>.
+                Currently frontend works for ${blockchainNetMeta}. Your NetworkId: ${networkId}.
+                To change, e.g. for polygon, <a href="https://coinmarketcap.com/alexandria/article/connect-metamask-to-polygon-network">use a link</a>.
               </div>
               <button onclick="handleLogout()">Logout</button>
             </div>
@@ -284,7 +284,7 @@
               <div class="container">
                 <h1>Finally</h1>
                 <div class="info">Your gift is transferred successfully.</div>
-                <div class="info">You could check that you are an owner of the NFT via OpenSea, Rarible, other NFT-marketplaces or even via wallet app (but indexing process may take a while). Or even via <a href="https://polygonscan.com/address/${currentUserAddressGlobal}">PolygonScan</a> in a <b>token</b> field menu.</div>
+                <div class="info">You could check that you are an owner of the NFT via OpenSea, Rarible, other NFT-marketplaces or even via wallet app (but indexing process may take a while). Or even via <a href="${blockchainScanUrl}//${currentUserAddressGlobal}">Blockchain Scan</a> in a <b>token</b> field menu.</div>
                 <div class="info">To receive another gift merely refresh the page.</div>
               </div>
             `;
