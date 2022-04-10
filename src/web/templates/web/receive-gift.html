@@ -182,8 +182,13 @@
             })
 
         if (!darilkaContractGlobal) {
-          const darilkaContract = await fetchDarilka();
-          darilkaContractGlobal = new window.userWeb3.eth.Contract(darilkaContract.abi, darilkaContract.address);
+          try {
+            const darilkaContract = await fetchDarilka();
+            darilkaContractGlobal = new window.userWeb3.eth.Contract(darilkaContract.abi, darilkaContract.address);
+          } catch (e) {
+            window.alert("Could not init Darilka contract, try to refresh the page later...");
+            window.alert(e);
+          }
         }
 
         // our html frames
@@ -196,7 +201,7 @@
         // where we will inject out htmls above
         const target = document.querySelector("#app");
 
-        if (accounts.length && isMetaMaskLoggedInCookie()) {  // check both: metamask provider readiness & that user want to be logged in
+        if (accounts.length && isMetaMaskLoggedInCookie() && darilkaContractGlobal) {  // check both: metamask provider readiness & that user want to be logged in
           const networkId = await window.userWeb3.eth.net.getId();
           currentUserAddressGlobal = accounts[0];
           const userBalance = window.userWeb3.utils.fromWei(
