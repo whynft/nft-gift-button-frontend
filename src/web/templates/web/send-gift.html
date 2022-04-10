@@ -105,7 +105,7 @@
       // standart metamask behaviour to login
       const ethEnabled = async () => {
         if (window.ethereum) {
-          await window.ethereum.send('eth_requestAccounts');
+          await window.ethereum.request({ method: 'eth_requestAccounts' }); 
           window.web3 = new Web3(window.ethereum);
           console.log(web3);
           return true;
