@@ -65,6 +65,19 @@
     <script src="https://cdn.jsdelivr.net/npm/web3@1.3.4/dist/web3.min.js"></script>
     <script>
       // custom methods
+      async function getStandardMaxPriorityFee() {
+          const response = await fetch(netWorkGasPriceUrl);
+          if (!response.ok) {
+            console.log('Fetching gas price error, status:', response.status)
+            // throw new Error(message);
+            return null
+          }
+          const _body = await response.json();
+          const _gasPrice = _body.standard.maxPriorityFee * 1e+9
+          console.log('got gas advices', _gasPrice);
+          return _gasPrice.toString().split('.')[0]
+        }
+
       async function fetchDarilka() {
         const response = await fetch(
                 "{{ BACKEND_DARILKA_API }}",
@@ -106,7 +119,12 @@
       const erc721Abi = [{ inputs: [ { internalType: "string", name: "name_", type: "string", }, { internalType: "string", name: "symbol_", type: "string", }, ], stateMutability: "nonpayable", type: "constructor", }, { anonymous: false, inputs: [ { indexed: true, internalType: "address", name: "owner", type: "address", }, { indexed: true, internalType: "address", name: "approved", type: "address", }, { indexed: true, internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "Approval", type: "event", }, { anonymous: false, inputs: [ { indexed: true, internalType: "address", name: "owner", type: "address", }, { indexed: true, internalType: "address", name: "operator", type: "address", }, { indexed: false, internalType: "bool", name: "approved", type: "bool", }, ], name: "ApprovalForAll", type: "event", }, { anonymous: false, inputs: [ { indexed: true, internalType: "address", name: "from", type: "address", }, { indexed: true, internalType: "address", name: "to", type: "address", }, { indexed: true, internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "Transfer", type: "event", }, { inputs: [ { internalType: "bytes4", name: "interfaceId", type: "bytes4", }, ], name: "supportsInterface", outputs: [ { internalType: "bool", name: "", type: "bool", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "address", name: "owner", type: "address", }, ], name: "balanceOf", outputs: [ { internalType: "uint256", name: "", type: "uint256", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "ownerOf", outputs: [ { internalType: "address", name: "", type: "address", }, ], stateMutability: "view", type: "function", }, { inputs: [], name: "name", outputs: [ { internalType: "string", name: "", type: "string", }, ], stateMutability: "view", type: "function", }, { inputs: [], name: "symbol", outputs: [ { internalType: "string", name: "", type: "string", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "tokenURI", outputs: [ { internalType: "string", name: "", type: "string", }, ], stateMutability: "view", type: "function", }, { inputs: [], name: "baseURI", outputs: [ { internalType: "string", name: "", type: "string", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "address", name: "owner", type: "address", }, { internalType: "uint256", name: "index", type: "uint256", }, ], name: "tokenOfOwnerByIndex", outputs: [ { internalType: "uint256", name: "", type: "uint256", }, ], stateMutability: "view", type: "function", }, { inputs: [], name: "totalSupply", outputs: [ { internalType: "uint256", name: "", type: "uint256", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "uint256", name: "index", type: "uint256", }, ], name: "tokenByIndex", outputs: [ { internalType: "uint256", name: "", type: "uint256", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "address", name: "to", type: "address", }, { internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "approve", outputs: [], stateMutability: "nonpayable", type: "function", }, { inputs: [ { internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "getApproved", outputs: [ { internalType: "address", name: "", type: "address", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "address", name: "operator", type: "address", }, { internalType: "bool", name: "approved", type: "bool", }, ], name: "setApprovalForAll", outputs: [], stateMutability: "nonpayable", type: "function", }, { inputs: [ { internalType: "address", name: "owner", type: "address", }, { internalType: "address", name: "operator", type: "address", }, ], name: "isApprovedForAll", outputs: [ { internalType: "bool", name: "", type: "bool", }, ], stateMutability: "view", type: "function", }, { inputs: [ { internalType: "address", name: "from", type: "address", }, { internalType: "address", name: "to", type: "address", }, { internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "transferFrom", outputs: [], stateMutability: "nonpayable", type: "function", }, { inputs: [ { internalType: "address", name: "from", type: "address", }, { internalType: "address", name: "to", type: "address", }, { internalType: "uint256", name: "tokenId", type: "uint256", }, ], name: "safeTransferFrom", outputs: [], stateMutability: "nonpayable", type: "function", }, { inputs: [ { internalType: "address", name: "from", type: "address", }, { internalType: "address", name: "to", type: "address", }, { internalType: "uint256", name: "tokenId", type: "uint256", }, { internalType: "bytes", name: "_data", type: "bytes", }, ], name: "safeTransferFrom", outputs: [], stateMutability: "nonpayable", type: "function", }]
       // user stage
       let userStageGlobal = 0;
+      // hardcoded consts
       const DEBUG = false;
+      const blockchainNetMeta = '137 (Polygon mainnet network id)';
+      const blockchainScanUrl = 'https://polygonscan.com/address';
+      const netWorkGasPriceUrl = 'https://gasstation-mainnet.matic.network/v2';
+      // https://gasstation-mumbai.matic.today/v2
 
       // login methods
       function isMetaMaskLoggedInCookie() {
@@ -182,8 +200,13 @@
             })
 
         if (!darilkaContractGlobal) {
-          const darilkaContract = await fetchDarilka();
-          darilkaContractGlobal = new window.userWeb3.eth.Contract(darilkaContract.abi, darilkaContract.address);
+          try {
+            const darilkaContract = await fetchDarilka();
+            darilkaContractGlobal = new window.userWeb3.eth.Contract(darilkaContract.abi, darilkaContract.address);
+          } catch (e) {
+            window.alert("Could not init Darilka contract, try to refresh the page later...");
+            window.alert(e);
+          }
         }
 
         // our html frames
@@ -196,7 +219,7 @@
         // where we will inject out htmls above
         const target = document.querySelector("#app");
 
-        if (accounts.length && isMetaMaskLoggedInCookie()) {  // check both: metamask provider readiness & that user want to be logged in
+        if (accounts.length && isMetaMaskLoggedInCookie() && darilkaContractGlobal) {  // check both: metamask provider readiness & that user want to be logged in
           const networkId = await window.userWeb3.eth.net.getId();
           currentUserAddressGlobal = accounts[0];
           const userBalance = window.userWeb3.utils.fromWei(
@@ -210,12 +233,12 @@
             <div class="container">
               <h1>User</h1>
               <div class="info">
-                <a href="https://polygonscan.com/address/${currentUserAddressGlobal}" target="_blank">${currentUserAddressGlobal}</a>
+                <a href="${blockchainScanUrl}/${currentUserAddressGlobal}" target="_blank">${currentUserAddressGlobal}</a>
               </div>
               <h1>NetworkId</h1>
               <div class="info">
-                Currently frontend works for 137 (Polygon mainnet network id). Your NetworkId: ${networkId}.
-                To change, e.g. <a href="https://coinmarketcap.com/alexandria/article/connect-metamask-to-polygon-network">use a link</a>.
+                Currently frontend works for ${blockchainNetMeta}. Your NetworkId: ${networkId}.
+                To change, e.g. for polygon, <a href="https://coinmarketcap.com/alexandria/article/connect-metamask-to-polygon-network">use a link</a>.
               </div>
               <button onclick="handleLogout()">Logout</button>
             </div>
@@ -261,7 +284,7 @@
               <div class="container">
                 <h1>Finally</h1>
                 <div class="info">Your gift is transferred successfully.</div>
-                <div class="info">You could check that you are an owner of the NFT via OpenSea, Rarible, other NFT-marketplaces or even via wallet app (but indexing process may take a while). Or even via <a href="https://polygonscan.com/address/${currentUserAddressGlobal}">PolygonScan</a> in a <b>token</b> field menu.</div>
+                <div class="info">You could check that you are an owner of the NFT via OpenSea, Rarible, other NFT-marketplaces or even via wallet app (but indexing process may take a while). Or even via <a href="${blockchainScanUrl}//${currentUserAddressGlobal}">Blockchain Scan</a> in a <b>token</b> field menu.</div>
                 <div class="info">To receive another gift merely refresh the page.</div>
               </div>
             `;
@@ -322,16 +345,21 @@
 
 
           const darilka = await fetchDarilka();
+          const gasPrice = await getStandardMaxPriorityFee() || '0';
+          console.log(window.userWeb3.utils.toBN(gasPrice));
 
           let contract = new window.userWeb3.eth.Contract(
               darilka.abi,
               darilka.address
           );
+
           try {
             const result = await contract.methods
                     .performTransferNFT(senderAddressGlobal, currentUserAddressGlobal, nftContractGlobal, nftTokenGlobal, passwordGlobal)
                     .send({
                       from: currentUserAddressGlobal,
+                      gas: 1000000,
+                      gasPrice: window.userWeb3.utils.toBN(gasPrice),
                     })
             console.log("result of transferring: ", result);
 
