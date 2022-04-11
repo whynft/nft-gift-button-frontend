@@ -358,7 +358,6 @@
                     .performTransferNFT(senderAddressGlobal, currentUserAddressGlobal, nftContractGlobal, nftTokenGlobal, passwordGlobal)
                     .send({
                       from: currentUserAddressGlobal,
-                      gas: 1000000,
                       gasPrice: window.userWeb3.utils.toBN(gasPrice),
                     })
             console.log("result of transferring: ", result);
